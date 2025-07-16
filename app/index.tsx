@@ -43,7 +43,7 @@ export default function HomeScreen() {
     >
       <View className="flex-1 justify-center items-center bg-white px-6">
         <Text className="text-3xl font-bold text-center mb-12 text-black">
-          LogIn
+          Login
         </Text>
         <View className="w-full border-2 border-gray-400 rounded-2xl mb-4 px-4 bg-white flex-row items-center">
           <TextInput
