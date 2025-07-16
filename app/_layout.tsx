@@ -8,9 +8,10 @@ import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { NativeBaseProvider, extendTheme } from "native-base";
+import "nativewind";
 import "react-native-reanimated";
 import Toast from "react-native-toast-message";
-// Optional: basic NativeBase theme (can remove or customize later)
+import "../global.css";
 const theme = extendTheme({});
 
 export default function RootLayout() {
