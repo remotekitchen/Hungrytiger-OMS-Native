@@ -19,7 +19,7 @@ export default function HomeScreen() {
     >
       <ThemedView style={styles.titleContainer}>
         <ThemedText type="title">Welcome!</ThemedText>
-        <Text className="text-3xl font-bold text-red-500">Hello TLD</Text>
+        <Text className="text-4xl text-red-500">Test Tailwind</Text>
         <HelloWave />
       </ThemedView>
       <ThemedView style={styles.stepContainer}>
