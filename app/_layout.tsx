@@ -10,7 +10,6 @@ import { StatusBar } from "expo-status-bar";
 import { NativeBaseProvider, extendTheme } from "native-base";
 import "react-native-reanimated";
 import Toast from "react-native-toast-message";
-import "../global.css";
 // Optional: basic NativeBase theme (can remove or customize later)
 const theme = extendTheme({});
 
