@@ -1,67 +1,38 @@
 {
   "expo": {
-    "name": "HungryTigerOMS",
-    "slug": "HungryTigerOMS",
+    "name": "HungryTiger-OMS",
+    "slug": "HungryTiger-OMS",
     "version": "1.0.0",
+
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+
+    "experiments": {
+      "tsconfigPaths": true
+    },
+
+    "plugins": [],
+
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "com.chatchefs.omsbd",
-    "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "icon": "./assets/icon.png",
+
+    "userInterfaceStyle": "light",
+
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": ["**/*"],
     "ios": {
-      "supportsTablet": true,
-      "infoPlist": {
-        "NSCameraUsageDescription": "This app requires access to the camera.",
-        "NSPhotoLibraryUsageDescription": "This app requires access to the photo library."
-      }
+      "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/icon.png",
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      },
-      "edgeToEdgeEnabled": true,
-      "permissions": [
-        "INTERNET",
-        "NOTIFICATIONS",
-        "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION",
-        "CAMERA",
-        "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
-      ],
-      "package": "com.chatchefs.hoteloms"
-    },
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/icon.png"
-    },
-    "plugins": [
-      "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
-        }
-      ]
-    ],
-    "experiments": {
-      "typedRoutes": true
-    },
-    "extra": {
-      "eas": {
-        "projectId": "441bd409-d5fb-4db1-bda0-15bf4e0f08ae"
       }
-    },
-    "updates": {
-      "url": "https://u.expo.dev/441bd409-d5fb-4db1-bda0-15bf4e0f08ae"
-    },
-    "runtimeVersion": {
-      "policy": "appVersion"
     }
   }
 }
