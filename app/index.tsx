@@ -1,84 +1,99 @@
-import { Image } from "expo-image";
-import { Platform, StyleSheet, Text } from "react-native";
-
-import { HelloWave } from "@/components/HelloWave";
-import ParallaxScrollView from "@/components/ParallaxScrollView";
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
 import { router } from "expo-router";
+import { Eye, EyeOff } from "lucide-react-native";
+import React, { useState } from "react";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function HomeScreen() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+
+  const validate = () => {
+    if (!email) return "Email is required.";
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))
+      return "Enter a valid email.";
+    if (!password) return "Password is required.";
+    if (password.length < 6) return "Password must be at least 6 characters.";
+    return "";
+  };
+
+  const handleLogin = () => {
+    const err = validate();
+    setError(err);
+    setSubmitted(true);
+    if (!err) {
+      console.log({ email, password });
+      router.push("/home");
+    }
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
-      headerImage={
-        <Image
-          source={require("@/assets/images/partial-react-logo.png")}
-          style={styles.reactLogo}
-        />
-      }
+    <KeyboardAvoidingView
+      className="flex-1"
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText onPress={() => router.push("/home")} type="title">
-          Welcome!
-        </ThemedText>
-        <Text className="text-4xl text-purple-500">Test Tailwind</Text>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit{" "}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText>{" "}
-          to see changes. Press{" "}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: "cmd + d",
-              android: "cmd + m",
-              web: "F12",
-            })}
-          </ThemedText>{" "}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">
-            npm run reset-project
-          </ThemedText>{" "}
-          to get a fresh <ThemedText type="defaultSemiBold">app</ThemedText>{" "}
-          directory. This will move the current{" "}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{" "}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      <View className="flex-1 justify-center items-center bg-white px-6">
+        <Text className="text-3xl font-bold text-center mb-12 text-black">
+          LogIn
+        </Text>
+        <View className="w-full border-2 border-gray-400 rounded-2xl mb-4 px-4 bg-white flex-row items-center">
+          <TextInput
+            className="flex-1 h-14 text-lg text-black font-semibold"
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            placeholderTextColor="#888"
+          />
+        </View>
+        {submitted && error && error.toLowerCase().includes("email") ? (
+          <Text className="text-red-600 text-sm mb-2 w-full text-left">
+            {error}
+          </Text>
+        ) : null}
+        <View className="w-full border-2 border-gray-400 rounded-2xl mb-4 px-4 bg-white flex-row items-center">
+          <TextInput
+            className="flex-1 h-14 text-lg text-black font-semibold"
+            placeholder="Password"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={!showPassword}
+            placeholderTextColor="#888"
+          />
+          <TouchableOpacity
+            className="p-1"
+            onPress={() => setShowPassword((v) => !v)}
+            hitSlop={10}
+          >
+            {showPassword ? (
+              <Eye size={24} color="#222" />
+            ) : (
+              <EyeOff size={24} color="#222" />
+            )}
+          </TouchableOpacity>
+        </View>
+        {submitted && error && error.toLowerCase().includes("password") ? (
+          <Text className="text-red-600 text-sm mb-2 w-full text-left">
+            {error}
+          </Text>
+        ) : null}
+        <TouchableOpacity
+          className="w-full bg-blue-500 py-4 rounded-xl items-center mt-2"
+          onPress={handleLogin}
+        >
+          <Text className="text-white text-lg font-bold">Login</Text>
+        </TouchableOpacity>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: "absolute",
-  },
-});
