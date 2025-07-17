@@ -1,10 +1,18 @@
 import React, { useState } from "react";
 import { Platform, StatusBar, View } from "react-native";
+import Discounts from "../components/Discounts";
 import Header from "../components/Header";
 import HistorySection from "../components/HistorySection";
+import Inbox from "../components/Inbox";
+import MenuPage from "../components/MenuPage";
 import MenusSection from "../components/MenusSection";
 import OrdersSection from "../components/OrdersSection";
+import Performance from "../components/Performance";
+import RecentOrders from "../components/RecentOrders";
+import RequestRider from "../components/RequestRider";
+import SettingsPage from "../components/SettingsPage";
 import Sidebar from "../components/Sidebar";
+import WhatsNew from "../components/WhatsNew";
 
 function getStatusBarHeight() {
   if (Platform.OS === "ios") return 44;
@@ -19,6 +27,14 @@ export default function Home() {
 
   let SectionComponent = null;
   if (activeSection === "orders") SectionComponent = <OrdersSection />;
+  if (activeSection === "recent") SectionComponent = <RecentOrders />;
+  if (activeSection === "performance") SectionComponent = <Performance />;
+  if (activeSection === "menu") SectionComponent = <MenuPage />;
+  if (activeSection === "discounts") SectionComponent = <Discounts />;
+  if (activeSection === "request") SectionComponent = <RequestRider />;
+  if (activeSection === "inbox") SectionComponent = <Inbox />;
+  if (activeSection === "settings") SectionComponent = <SettingsPage />;
+  if (activeSection === "whatsnew") SectionComponent = <WhatsNew />;
   if (activeSection === "history") SectionComponent = <HistorySection />;
   if (activeSection === "menus") SectionComponent = <MenusSection />;
 
