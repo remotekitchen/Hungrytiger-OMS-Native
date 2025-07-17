@@ -3,7 +3,6 @@ import React, { useCallback, useState } from "react";
 import {
   RefreshControl,
   ScrollView,
-  StyleSheet,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -18,9 +17,18 @@ export default function OrdersSection() {
   const [refreshing, setRefreshing] = useState(false);
   const [detailsVisible, setDetailsVisible] = useState(false);
   const [acceptedVisible, setAcceptedVisible] = useState(false);
+  const [accepted, setAccepted] = useState(true); // For demo, true shows accepted order
 
   // Demo order
   const order = { id: "125", items: 1, mins: 17, code: "XXXX-1234" };
+  const acceptedOrder = {
+    id: "00",
+    code: "XXXX-1234",
+    items: 1,
+    mins: 8,
+    test: true,
+    status: "Rider is on the way",
+  };
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -45,7 +53,7 @@ export default function OrdersSection() {
   return (
     <>
       <ScrollView
-        style={styles.container}
+        className="flex-1 bg-white pt-4 px-3"
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -56,8 +64,8 @@ export default function OrdersSection() {
         }
       >
         {/* Top row: New & Upcoming */}
-        <View style={styles.row}>
-          <View style={styles.col}>
+        <View className="flex-row justify-between mb-6">
+          <View className="flex-1 mr-2">
             <OrderCategoryHeader title="New" count={hasOrders ? 1 : 0} />
             {hasOrders ? (
               <TouchableOpacity
@@ -70,15 +78,19 @@ export default function OrdersSection() {
               <OrderEmptyCard text="No new orders" />
             )}
           </View>
-          <View style={styles.col}>
+          <View className="flex-1 ml-2">
             <OrderCategoryHeader title="Upcoming" count={0} />
             <OrderEmptyCard text="No upcoming orders" />
           </View>
         </View>
         {/* Accepted row */}
-        <View style={styles.acceptedRow}>
-          <OrderCategoryHeader title="Accepted" count={0} />
-          <OrderEmptyCard text="No accepted orders" />
+        <View className="mt-2">
+          <OrderCategoryHeader title="Accepted" count={accepted ? 1 : 0} />
+          {accepted ? (
+            <OrderCard order={acceptedOrder} accepted />
+          ) : (
+            <OrderEmptyCard text="No accepted orders" />
+          )}
         </View>
       </ScrollView>
       <OrderDetailsModal
@@ -91,24 +103,3 @@ export default function OrdersSection() {
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    paddingTop: 16,
-    paddingHorizontal: 12,
-  },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 24,
-  },
-  col: {
-    flex: 1,
-    marginRight: 8,
-  },
-  acceptedRow: {
-    marginTop: 8,
-  },
-});
