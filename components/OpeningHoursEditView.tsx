@@ -10,7 +10,7 @@ export default function OpeningHoursEditView({
   setOpeningHours,
   onCancel,
   onSave,
-}) {
+}: any) {
   const [expandedDays, setExpandedDays] = useState([]);
   const [localHours, setLocalHours] = useState(
     JSON.parse(JSON.stringify(openingHours))
@@ -23,8 +23,8 @@ export default function OpeningHoursEditView({
     setLocalHours(updated);
   };
 
-  const handleArrow = (idx) => {
-    setExpandedDays((prev) =>
+  const handleArrow = (idx: any) => {
+    setExpandedDays((prev: any) =>
       prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]
     );
   };
