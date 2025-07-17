@@ -1,4 +1,4 @@
-import { ChevronDown, Menu, QrCode } from "lucide-react-native";
+import { ChevronDown, Menu, QrCode, Store } from "lucide-react-native";
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 
@@ -18,11 +18,13 @@ const Header: React.FC<HeaderProps> = ({
       <TouchableOpacity onPress={onMenuPress} className="p-2 static z-50">
         <Menu size={28} color="#222" />
       </TouchableOpacity>
-      <Text className="text-xl font-bold flex-1 text-center -ml-8">Orders</Text>
+      {/* <Text className="text-xl font-bold flex-1 text-center -ml-8">Orders</Text> */}
       <View className="flex-row items-center gap-2">
         <TouchableOpacity onPress={onQrPress} className="p-2">
           <QrCode size={24} color="#222" />
         </TouchableOpacity>
+        {/* Store icon beside QR code */}
+        <Store size={24} color="#222" style={{ marginLeft: 4 }} />
         <TouchableOpacity
           onPress={onOpenPress}
           className="flex-row items-center bg-green-500 rounded-lg px-4 py-2 ml-2"

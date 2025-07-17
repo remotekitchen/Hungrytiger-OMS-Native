@@ -1,3 +1,4 @@
+import { userLoggedOut } from "@/redux/feature/authentication/authenticationSlice";
 import {
   ArrowLeft,
   BarChart2,
@@ -14,6 +15,7 @@ import {
 } from "lucide-react-native";
 import React, { useRef } from "react";
 import {
+  Alert,
   Dimensions,
   Image,
   StyleSheet,
@@ -29,6 +31,7 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
+import { useDispatch } from "react-redux";
 
 const menuItems = [
   { label: "Orders overview", icon: List, key: "orders" },
@@ -65,6 +68,7 @@ export default function Sidebar({
   selectedKey: string;
   statusBarHeight: number;
 }) {
+  const dispatch = useDispatch();
   const windowHeight = Dimensions.get("window").height;
   const sidebarWidth = Dimensions.get("window").width * 0.8;
   const translateX = useSharedValue(-sidebarWidth);
@@ -103,6 +107,25 @@ export default function Sidebar({
       }
     );
   }, [sidebarWidth, translateX]);
+
+  const handleLogout = () => {
+    Alert.alert(
+      "Logout",
+      "Are you sure you want to logout?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Yes",
+          style: "destructive",
+          onPress: () => {
+            dispatch(userLoggedOut());
+            onClose();
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  };
 
   const gestureHandler = useAnimatedGestureHandler({
     onStart: (_, ctx: any) => {
@@ -225,7 +248,7 @@ export default function Sidebar({
             </TouchableOpacity>
             <TouchableOpacity
               className="flex-row items-center py-3"
-              onPress={handleClose}
+              onPress={handleLogout}
             >
               <ArrowLeft size={22} color="#222" style={{ marginRight: 16 }} />
               <Text className="text-base font-semibold text-black flex-1">

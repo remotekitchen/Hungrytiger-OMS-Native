@@ -1,13 +1,40 @@
+import {
+  selectToken,
+  userLoggedIn,
+} from "@/redux/feature/authentication/authenticationSlice";
+import { store } from "@/redux/store";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { NativeBaseProvider, extendTheme } from "native-base";
 import "nativewind";
+import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import Toast from "react-native-toast-message";
+import { Provider, useDispatch, useSelector } from "react-redux";
 import "../global.css";
+import Home from "./home";
+import HomeScreen from "./index";
 const theme = extendTheme({});
+
+function AuthGate() {
+  const token = useSelector(selectToken);
+  const dispatch = useDispatch();
+  useEffect(() => {
+    const hydrateAuth = async () => {
+      const authData = await AsyncStorage.getItem("auth");
+      if (authData) {
+        const { token, user } = JSON.parse(authData);
+        if (token && user) {
+          dispatch(userLoggedIn({ token, user }));
+        }
+      }
+    };
+    hydrateAuth();
+  }, [dispatch]);
+  return token ? <Home /> : <HomeScreen />;
+}
 
 export default function RootLayout() {
   const [loaded] = useFonts({
@@ -22,13 +49,11 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <NativeBaseProvider theme={theme}>
-        <Stack>
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen name="home" options={{ headerShown: false }} />
-          <Stack.Screen name="+not-found" />
-        </Stack>
-        <StatusBar style="auto" translucent />
-        <Toast />
+        <Provider store={store}>
+          <StatusBar style="auto" translucent />
+          <AuthGate />
+          <Toast />
+        </Provider>
       </NativeBaseProvider>
     </GestureHandlerRootView>
   );
