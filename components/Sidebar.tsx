@@ -191,13 +191,17 @@ export default function Sidebar({
                 style={{
                   borderLeftWidth: selectedKey === item.key ? 4 : 0,
                   borderLeftColor:
-                    selectedKey === item.key ? "#E91E63" : "transparent",
+                    selectedKey === item.key ? "#FB923C" : "transparent",
                   backgroundColor:
                     selectedKey === item.key ? "#F8F8F8" : "transparent",
                   marginBottom: item.label === "What's new" ? 8 : 0,
                 }}
               >
-                <item.icon size={22} color="#222" style={{ marginRight: 16 }} />
+                <item.icon
+                  size={22}
+                  color="#222"
+                  style={{ marginLeft: 5, marginRight: 16 }}
+                />
                 <Text className="text-base font-semibold text-black flex-1">
                   {item.label}
                 </Text>
@@ -205,7 +209,7 @@ export default function Sidebar({
                 {item.badge && (
                   <View
                     style={{
-                      backgroundColor: "#E91E63",
+                      backgroundColor: "#FB923C",
                       borderRadius: 12,
                       minWidth: 24,
                       height: 24,
