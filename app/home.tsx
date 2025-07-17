@@ -13,6 +13,7 @@ import SettingsPage from "@/components/SettingsPage";
 import Sidebar from "@/components/Sidebar";
 import WhatsNew from "@/components/WhatsNew";
 import MenusSection from "../components/MenusSection";
+import OpeningHoursModal from "../components/OpeningHoursModal";
 import OrdersSection from "../components/OrdersSection";
 import StoreStatusModal from "../components/StoreStatusModal";
 
@@ -34,6 +35,47 @@ export default function Home() {
     hours: 0,
   });
   const [storeStatusModalVisible, setStoreStatusModalVisible] = useState(false);
+
+  // Opening hours state
+  const [openingHoursModalVisible, setOpeningHoursModalVisible] =
+    useState(false);
+  const [openingHours, setOpeningHours] = useState([
+    {
+      day: "Monday",
+      enabled: true,
+      shifts: [{ start: "11:00", end: "21:00" }],
+    },
+    {
+      day: "Tuesday",
+      enabled: true,
+      shifts: [{ start: "11:00", end: "21:00" }],
+    },
+    {
+      day: "Wednesday",
+      enabled: true,
+      shifts: [{ start: "11:00", end: "21:00" }],
+    },
+    {
+      day: "Thursday",
+      enabled: true,
+      shifts: [{ start: "11:00", end: "21:00" }],
+    },
+    {
+      day: "Friday",
+      enabled: true,
+      shifts: [{ start: "11:00", end: "21:00" }],
+    },
+    {
+      day: "Saturday",
+      enabled: true,
+      shifts: [{ start: "11:00", end: "21:00" }],
+    },
+    {
+      day: "Sunday",
+      enabled: true,
+      shifts: [{ start: "11:00", end: "21:00" }],
+    },
+  ]);
 
   // Compute label for header button
   let storeStatusLabel = "Open";
@@ -76,6 +118,7 @@ export default function Home() {
           onOpenPress={() => setStoreStatusModalVisible(true)}
           storeStatusLabel={storeStatusLabel}
           isPaused={storeStatus.status === "pause"}
+          onStoreIconPress={() => setOpeningHoursModalVisible(true)}
         />
       </View>
       <View className="flex-1">{SectionComponent}</View>
@@ -97,6 +140,12 @@ export default function Home() {
           setStoreStatusModalVisible(false);
         }}
         currentStatus={storeStatus}
+      />
+      <OpeningHoursModal
+        visible={openingHoursModalVisible}
+        onClose={() => setOpeningHoursModalVisible(false)}
+        openingHours={openingHours}
+        setOpeningHours={setOpeningHours}
       />
     </View>
   );
