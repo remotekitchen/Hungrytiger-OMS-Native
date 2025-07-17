@@ -6,6 +6,7 @@ import HistorySection from "../components/HistorySection";
 import Discounts from "@/components/Discounts";
 import Inbox from "@/components/Inbox";
 import MenuPage from "@/components/MenuPage";
+import OpeningHoursModal from "@/components/OpeningHoursModal";
 import Performance from "@/components/Performance";
 import RecentOrders from "@/components/RecentOrders";
 import RequestRider from "@/components/RequestRider";
@@ -13,7 +14,6 @@ import SettingsPage from "@/components/SettingsPage";
 import Sidebar from "@/components/Sidebar";
 import WhatsNew from "@/components/WhatsNew";
 import MenusSection from "../components/MenusSection";
-import OpeningHoursModal from "../components/OpeningHoursModal";
 import OrdersSection from "../components/OrdersSection";
 import StoreStatusModal from "../components/StoreStatusModal";
 

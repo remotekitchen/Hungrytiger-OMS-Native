@@ -12,7 +12,7 @@ export default function OpeningHoursModal({
   onClose,
   openingHours,
   setOpeningHours,
-}) {
+}: any) {
   const [editMode, setEditMode] = useState(false);
   const [show, setShow] = useState(visible);
 
@@ -70,7 +70,7 @@ export default function OpeningHoursModal({
                 openingHours={openingHours}
                 setOpeningHours={setOpeningHours}
                 onCancel={() => setEditMode(false)}
-                onSave={(newHours) => {
+                onSave={(newHours: any) => {
                   setOpeningHours(newHours);
                   setEditMode(false);
                 }}

@@ -70,7 +70,7 @@ export default function OpeningHoursEditView({
 
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
-      <ScrollView>
+      <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
         <Text
           style={{
             fontSize: 28,
@@ -130,34 +130,49 @@ export default function OpeningHoursEditView({
           </View>
         ))}
       </ScrollView>
+      {/* Fixed bottom bar for Save/Cancel, two rows */}
       <View
         style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: 24,
-          borderTopWidth: 1,
-          borderTopColor: "#eee",
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: "#fff",
+          paddingHorizontal: 24,
+          paddingBottom: 24,
+          paddingTop: 12,
+          zIndex: 10,
         }}
       >
-        <TouchableOpacity onPress={onCancel}>
-          <Text style={{ color: "#E91E63", fontWeight: "bold", fontSize: 18 }}>
-            Cancel
-          </Text>
-        </TouchableOpacity>
         <TouchableOpacity
           onPress={() => onSave(localHours)}
           disabled={!hasChanged}
           style={{
-            opacity: hasChanged ? 1 : 0.5,
-            backgroundColor: "#f3f4f6",
+            width: "100%",
+            backgroundColor: hasChanged ? "#E91E63" : "#F3F4F6",
             borderRadius: 8,
-            paddingHorizontal: 32,
-            paddingVertical: 12,
+            paddingVertical: 18,
+            alignItems: "center",
+            marginBottom: 8,
+            opacity: hasChanged ? 1 : 1,
           }}
         >
-          <Text style={{ color: "#888", fontWeight: "bold", fontSize: 18 }}>
+          <Text
+            style={{
+              color: hasChanged ? "#fff" : "#888",
+              fontWeight: "bold",
+              fontSize: 22,
+            }}
+          >
             Save
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={onCancel}
+          style={{ alignItems: "center", marginTop: 0 }}
+        >
+          <Text style={{ color: "#E91E63", fontWeight: "bold", fontSize: 18 }}>
+            Cancel
           </Text>
         </TouchableOpacity>
       </View>
