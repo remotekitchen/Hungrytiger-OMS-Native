@@ -14,6 +14,7 @@ import Sidebar from "@/components/Sidebar";
 import WhatsNew from "@/components/WhatsNew";
 import MenusSection from "../components/MenusSection";
 import OrdersSection from "../components/OrdersSection";
+import StoreStatusModal from "../components/StoreStatusModal";
 
 function getStatusBarHeight() {
   if (Platform.OS === "ios") return 44;
@@ -25,6 +26,24 @@ export default function Home() {
   const [activeSection, setActiveSection] = useState("orders");
   const [headerHeight, setHeaderHeight] = useState(0);
   const statusBarHeight = getStatusBarHeight();
+
+  // Store status state
+  const [storeStatus, setStoreStatus] = useState({
+    status: "open", // "open" or "pause"
+    pauseType: "", // "forever", "wholeDay", "hours", or ""
+    hours: 0,
+  });
+  const [storeStatusModalVisible, setStoreStatusModalVisible] = useState(false);
+
+  // Compute label for header button
+  let storeStatusLabel = "Open";
+  if (storeStatus.status === "pause") {
+    if (storeStatus.pauseType === "forever") storeStatusLabel = "Paused";
+    else if (storeStatus.pauseType === "wholeDay") storeStatusLabel = "Paused";
+    else if (storeStatus.pauseType === "hours")
+      storeStatusLabel = `Paused (${storeStatus.hours}h)`;
+    else storeStatusLabel = "Paused";
+  }
 
   let SectionComponent = null;
   if (activeSection === "orders") SectionComponent = <OrdersSection />;
@@ -54,7 +73,9 @@ export default function Home() {
         <Header
           onMenuPress={() => setSidebarOpen(true)}
           onQrPress={() => {}}
-          onOpenPress={() => {}}
+          onOpenPress={() => setStoreStatusModalVisible(true)}
+          storeStatusLabel={storeStatusLabel}
+          isPaused={storeStatus.status === "pause"}
         />
       </View>
       <View className="flex-1">{SectionComponent}</View>
@@ -67,6 +88,15 @@ export default function Home() {
         }}
         selectedKey={activeSection}
         statusBarHeight={statusBarHeight}
+      />
+      <StoreStatusModal
+        visible={storeStatusModalVisible}
+        onClose={() => setStoreStatusModalVisible(false)}
+        onUpdate={(status, pauseType, hours) => {
+          setStoreStatus({ status, pauseType, hours });
+          setStoreStatusModalVisible(false);
+        }}
+        currentStatus={storeStatus}
       />
     </View>
   );

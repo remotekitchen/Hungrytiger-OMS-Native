@@ -6,12 +6,16 @@ interface HeaderProps {
   onMenuPress: () => void;
   onQrPress: () => void;
   onOpenPress: () => void;
+  storeStatusLabel: string;
+  isPaused: boolean;
 }
 
 const Header: React.FC<HeaderProps> = ({
   onMenuPress,
   onQrPress,
   onOpenPress,
+  storeStatusLabel,
+  isPaused,
 }) => {
   return (
     <View className="flex-row items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
@@ -27,9 +31,13 @@ const Header: React.FC<HeaderProps> = ({
         <Store size={24} color="#222" style={{ marginLeft: 4 }} />
         <TouchableOpacity
           onPress={onOpenPress}
-          className="flex-row items-center bg-green-500 rounded-lg px-4 py-2 ml-2"
+          className={`flex-row items-center rounded-lg px-4 py-2 ml-2 ${
+            isPaused ? "bg-red-500" : "bg-green-500"
+          }`}
         >
-          <Text className="text-white font-semibold mr-1">Open</Text>
+          <Text className="text-white font-semibold mr-1">
+            {storeStatusLabel}
+          </Text>
           <ChevronDown size={18} color="#fff" />
         </TouchableOpacity>
       </View>

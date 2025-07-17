@@ -1,19 +1,65 @@
 import {
-  CheckCircle,
   Circle,
   Minus,
   PauseCircle,
   Plus,
+  Store,
   X,
 } from "lucide-react-native";
 import { MotiView } from "moti";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 
-export default function StoreStatusModal({ visible, onClose }) {
-  const [status, setStatus] = useState("open");
-  const [pauseType, setPauseType] = useState("");
-  const [hours, setHours] = useState(0);
+interface StoreStatusModalProps {
+  visible: boolean;
+  onClose: () => void;
+  onUpdate: (status: string, pauseType: string, hours: number) => void;
+  currentStatus: { status: string; pauseType: string; hours: number };
+}
+
+const pauseOptions = [
+  { key: "forever", label: "Forever" },
+  { key: "wholeDay", label: "Whole Day" },
+  { key: "hours", label: "Certain Hours" },
+];
+
+function FilledCircle({ size = 20, color = "#2563eb" }) {
+  return (
+    <View
+      style={{
+        width: size,
+        height: size,
+        borderRadius: size / 2,
+        backgroundColor: color,
+      }}
+    />
+  );
+}
+
+export default function StoreStatusModal({
+  visible,
+  onClose,
+  onUpdate,
+  currentStatus,
+}: StoreStatusModalProps) {
+  const [status, setStatus] = useState(currentStatus.status);
+  const [pauseType, setPauseType] = useState(currentStatus.pauseType);
+  const [hours, setHours] = useState(currentStatus.hours);
+
+  useEffect(() => {
+    if (visible) {
+      setStatus(currentStatus.status);
+      setPauseType(currentStatus.pauseType);
+      setHours(currentStatus.hours);
+    }
+  }, [visible, currentStatus]);
+
+  const hasChanged =
+    status !== currentStatus.status ||
+    pauseType !== currentStatus.pauseType ||
+    hours !== currentStatus.hours;
+
+  const pauseDisabled = status !== "pause";
 
   if (!visible) return null;
   return (
@@ -37,90 +83,127 @@ export default function StoreStatusModal({ visible, onClose }) {
               status === "open" ? "border-blue-500" : "border-gray-300"
             }`}
             onPress={() => setStatus("open")}
+            disabled={status === "open"}
           >
-            <CheckCircle
+            <Store
               size={24}
               color={status === "open" ? "#2563eb" : "#888"}
-              className="mr-3"
+              style={{ marginRight: 12 }}
             />
             <Text className="text-lg flex-1">Open</Text>
-            {status === "open" && <CheckCircle size={24} color="#2563eb" />}
+            {/* No right icon for Open */}
           </TouchableOpacity>
           <TouchableOpacity
             className={`flex-row items-center border-2 rounded-xl px-4 py-3 ${
               status === "pause" ? "border-blue-500" : "border-gray-300"
             }`}
             onPress={() => setStatus("pause")}
+            disabled={status === "pause"}
           >
             <PauseCircle
               size={24}
               color={status === "pause" ? "#2563eb" : "#888"}
-              className="mr-3"
+              style={{ marginRight: 16 }}
             />
             <Text className="text-lg flex-1">Pause</Text>
-            {status === "pause" && <Circle size={24} color="#2563eb" />}
+            {/* No right-side circle for Pause */}
           </TouchableOpacity>
         </View>
-        {status === "pause" && (
-          <View className="mb-4">
-            <View className="flex-row flex-wrap gap-2 mb-2">
+        <View className="mb-4">
+          <View className="flex-row flex-wrap gap-2 mb-2">
+            {pauseOptions.slice(0, 2).map((opt) => (
               <TouchableOpacity
+                key={opt.key}
                 className="flex-row items-center"
-                onPress={() => setPauseType("forever")}
+                onPress={() => {
+                  if (!pauseDisabled) setPauseType(opt.key);
+                }}
+                disabled={pauseDisabled}
+                style={{ opacity: pauseDisabled ? 0.5 : 1 }}
               >
-                <Circle
-                  size={20}
-                  color={pauseType === "forever" ? "#2563eb" : "#888"}
-                />
-                <Text className="ml-2">Forever</Text>
+                {pauseType === opt.key && !pauseDisabled ? (
+                  <FilledCircle size={20} color="#2563eb" />
+                ) : (
+                  <Circle size={20} color="#888" />
+                )}
+                <Text className="ml-2">{opt.label}</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                className="flex-row items-center"
-                onPress={() => setPauseType("wholeDay")}
-              >
-                <Circle
-                  size={20}
-                  color={pauseType === "wholeDay" ? "#2563eb" : "#888"}
-                />
-                <Text className="ml-2">Whole Day</Text>
-              </TouchableOpacity>
-            </View>
-            <View className="flex-row items-center gap-2 mb-2">
-              <TouchableOpacity
-                className="flex-row items-center"
-                onPress={() => setPauseType("hours")}
-              >
-                <Circle
-                  size={20}
-                  color={pauseType === "hours" ? "#2563eb" : "#888"}
-                />
-                <Text className="ml-2">Certain Hours</Text>
-              </TouchableOpacity>
-              {pauseType === "hours" && (
-                <View className="flex-row items-center ml-4">
-                  <TouchableOpacity
-                    onPress={() => setHours(Math.max(0, hours - 1))}
-                    className="p-2"
-                  >
-                    <Minus size={20} color="#222" />
-                  </TouchableOpacity>
-                  <Text className="mx-2 w-6 text-center">{hours}</Text>
-                  <TouchableOpacity
-                    onPress={() => setHours(hours + 1)}
-                    className="p-2"
-                  >
-                    <Plus size={20} color="#222" />
-                  </TouchableOpacity>
-                </View>
+            ))}
+          </View>
+          {/* Always show Certain Hours row, enable controls only if selected */}
+          <View className="flex-row items-center gap-2 mb-2">
+            <TouchableOpacity
+              className="flex-row items-center"
+              onPress={() => {
+                if (!pauseDisabled) setPauseType("hours");
+              }}
+              disabled={pauseDisabled}
+              style={{ opacity: pauseDisabled ? 0.5 : 1 }}
+            >
+              {pauseType === "hours" && !pauseDisabled ? (
+                <FilledCircle size={20} color="#2563eb" />
+              ) : (
+                <Circle size={20} color="#888" />
               )}
+              <Text className="ml-2">Certain Hours</Text>
+            </TouchableOpacity>
+            {/* Always show the increment/decrement UI, only enable if selected */}
+            <View className="flex-row items-center ml-4">
+              <TouchableOpacity
+                onPress={() => setHours(Math.max(0, hours - 1))}
+                className="p-0"
+                disabled={pauseDisabled || pauseType !== "hours"}
+                style={{
+                  opacity: pauseType === "hours" && !pauseDisabled ? 1 : 0.5,
+                }}
+              >
+                <View
+                  style={{
+                    backgroundColor: "#e0e7ff",
+                    borderRadius: 9999,
+                    padding: 6,
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <Minus size={18} color="#2563eb" />
+                </View>
+              </TouchableOpacity>
+              <Text className="mx-2 w-6 text-center">{hours}</Text>
+              <TouchableOpacity
+                onPress={() => setHours(hours + 1)}
+                className="p-0"
+                disabled={pauseDisabled || pauseType !== "hours"}
+                style={{
+                  opacity: pauseType === "hours" && !pauseDisabled ? 1 : 0.5,
+                }}
+              >
+                <View
+                  style={{
+                    backgroundColor: "#e0e7ff",
+                    borderRadius: 9999,
+                    padding: 6,
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <Plus size={18} color="#2563eb" />
+                </View>
+              </TouchableOpacity>
             </View>
           </View>
-        )}
-        <TouchableOpacity className="w-full bg-blue-600 py-4 rounded-xl items-center mt-2">
+        </View>
+        <TouchableOpacity
+          className="w-full bg-blue-600 py-4 rounded-xl items-center mt-2"
+          onPress={() => {
+            onUpdate(status, pauseType, hours);
+          }}
+          disabled={!hasChanged}
+          style={{ opacity: hasChanged ? 1 : 0.5 }}
+        >
           <Text className="text-white text-lg font-bold">Update Status</Text>
         </TouchableOpacity>
       </MotiView>
-      <TouchableOpacity className="absolute inset-0" onPress={onClose} />
     </View>
   );
 }
