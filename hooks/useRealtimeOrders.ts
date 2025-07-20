@@ -150,19 +150,45 @@ export const useRealtimeOrders = (restaurantId: number | undefined) => {
   const categorizeOrders = (orders: Order[]) => {
     const newOrders = orders.filter((order) => order.status === "pending");
     const acceptedOrders = orders.filter(
-      (order) =>
-        order.status === "accepted" || order.status === "ready_for_pickup"
+      (order) => order.status !== "pending" && order.status !== "completed"
     );
-
+    // Debug log
+    if (typeof window !== "undefined") {
+      console.log(
+        "Accepted Orders:",
+        acceptedOrders.map((o) => ({ id: o.id, status: o.status }))
+      );
+    }
+    // Add counts for each status
+    const statusCounts = {
+      pending: orders.filter((order) => order.status === "pending").length,
+      accepted: orders.filter((order) => order.status === "accepted").length,
+      driver_assigned: orders.filter(
+        (order) => order.status === "driver_assigned"
+      ).length,
+      ready_for_pickup: orders.filter(
+        (order) => order.status === "ready_for_pickup"
+      ).length,
+    };
     return {
       newOrders,
       acceptedOrders,
+      statusCounts,
     };
   };
 
   const categorizedOrders = ordersData?.results
     ? categorizeOrders(ordersData.results)
-    : { newOrders: [], acceptedOrders: [] };
+    : {
+        newOrders: [],
+        acceptedOrders: [],
+        statusCounts: {
+          pending: 0,
+          accepted: 0,
+          driver_assigned: 0,
+          ready_for_pickup: 0,
+        },
+      };
 
   return {
     orders: ordersData?.results || [],

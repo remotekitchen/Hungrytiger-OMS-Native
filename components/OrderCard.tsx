@@ -48,7 +48,19 @@ export default function OrderCard({
   };
 
   if (accepted) {
+    if (order.status === "completed") {
+      return null;
+    }
     const isReady = order.status === "ready_for_pickup";
+    let statusLabel = "";
+    let statusClass = "";
+    if (isReady) {
+      statusLabel = "READY";
+      statusClass = "bg-green-100 text-green-600";
+    } else {
+      statusLabel = order.status.replace(/_/g, " ").toUpperCase();
+      statusClass = "bg-pink-100 text-pink-600";
+    }
 
     return (
       <MotiView
@@ -64,13 +76,9 @@ export default function OrderCard({
               #{order.id}
             </Text>
             <Text
-              className={`font-bold rounded px-2 py-0.5 text-xs ml-1 ${
-                isReady
-                  ? "bg-green-100 text-green-600"
-                  : "bg-pink-100 text-pink-600"
-              }`}
+              className={`font-bold rounded px-2 py-0.5 text-xs ml-1 ${statusClass}`}
             >
-              {isReady ? "READY" : order.status.toUpperCase()}
+              {statusLabel}
             </Text>
           </View>
           <Text className="text-black text-base mb-1">

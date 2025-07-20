@@ -1,3 +1,4 @@
+import { useReadyForPickupMutation } from "@/redux/feature/order/orderApi";
 import { ArrowLeft, Printer } from "lucide-react-native";
 import { MotiView } from "moti";
 import React, { useState } from "react";
@@ -10,6 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import OrderReadyStatusModal from "./OrderReadyStatusModal";
 
 interface OrderItem {
   id: number;
@@ -55,12 +57,27 @@ export default function OrderReadyModal({
 }) {
   const [mins, setMins] = useState(order.prep_time);
   const [loading, setLoading] = useState(false);
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [readyForPickup, { isLoading: isReady, isSuccess }] =
+    useReadyForPickupMutation();
 
   const handleReadyForDelivery = async () => {
     setLoading(true);
-    await new Promise((res) => setTimeout(res, 3000));
-    setLoading(false);
-    onReadyForDelivery();
+    try {
+      await readyForPickup({
+        orderId: order.id,
+        status: "ready_for_pickup",
+      }).unwrap();
+      setShowStatusModal(true);
+      setTimeout(() => {
+        setShowStatusModal(false);
+        setLoading(false);
+        onReadyForDelivery();
+      }, 2000);
+    } catch (error) {
+      setLoading(false);
+      // Optionally show error
+    }
   };
 
   // Calculate total items
@@ -276,14 +293,15 @@ export default function OrderReadyModal({
           </ScrollView>
           {/* Ready for Delivery Button */}
           <View className="p-5 bg-white border-t border-[#eee]">
-            {order.status === "accepted" ? (
+            {order.status === "accepted" ||
+            order.status === "driver_assigned" ? (
               <TouchableOpacity
                 onPress={handleReadyForDelivery}
-                disabled={loading}
+                disabled={loading || isReady}
                 className="bg-green-500 rounded-xl py-5 flex-row items-center justify-center px-5"
-                style={{ opacity: loading ? 0.7 : 1 }}
+                style={{ opacity: loading || isReady ? 0.7 : 1 }}
               >
-                {loading ? (
+                {loading || isReady ? (
                   <ActivityIndicator color="#fff" className="mr-2" />
                 ) : null}
                 <Text className="text-white font-bold text-xl flex-1 text-center">
@@ -294,16 +312,34 @@ export default function OrderReadyModal({
                 </Text>
               </TouchableOpacity>
             ) : (
-              <View className="bg-gray-300 rounded-xl py-5 flex-row items-center justify-center px-5">
-                <Text className="text-gray-600 font-bold text-xl flex-1 text-center">
-                  Ready for Pickup
+              // <View className="bg-gray-300 rounded-xl py-5 flex-row items-center justify-center px-5">
+              //   <Text className="text-gray-600 font-bold text-xl flex-1 text-center">
+              //     Received Payment
+              //   </Text>
+              //   <Text className="text-gray-600 font-bold text-base ml-3">
+              //     {totalItems} item{totalItems > 1 ? "s" : ""}
+              //   </Text>
+              // </View>
+              <TouchableOpacity
+                // onPress={}
+                // disabled={loading || isReady}
+                className="bg-green-500 rounded-xl py-5 flex-row items-center justify-center px-5"
+                style={{ opacity: loading || isReady ? 0.7 : 1 }}
+              >
+                {loading || isReady ? (
+                  <ActivityIndicator color="#fff" className="mr-2" />
+                ) : null}
+                <Text className="text-white font-bold text-xl flex-1 text-center">
+                  Payment Received
                 </Text>
-                <Text className="text-gray-600 font-bold text-base ml-3">
+                {/* <Text className="text-white font-bold text-base ml-3">
                   {totalItems} item{totalItems > 1 ? "s" : ""}
-                </Text>
-              </View>
+                </Text> */}
+              </TouchableOpacity>
             )}
           </View>
+          {/* Show OrderReadyStatusModal if needed */}
+          <OrderReadyStatusModal visible={showStatusModal} />
         </MotiView>
       </View>
     </Modal>

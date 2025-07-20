@@ -38,6 +38,16 @@ export const ordersApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["ORDER"],
     }),
+    readyForPickup: builder.mutation({
+      query: ({ orderId, status }) => ({
+        url: `api/billing/v2/order/item/?id=${orderId}`,
+        method: "PATCH",
+        body: {
+          status: status,
+        },
+      }),
+      invalidatesTags: ["ORDER"],
+    }),
   }),
 });
 
@@ -45,4 +55,5 @@ export const {
   useGetOrdersQuery,
   useAcceptOrderMutation,
   useRejectOrderMutation,
+  useReadyForPickupMutation,
 } = ordersApi;
