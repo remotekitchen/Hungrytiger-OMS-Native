@@ -48,12 +48,14 @@ interface AcceptOrderModalProps {
   visible: boolean;
   onClose: () => void;
   order: Order;
+  restaurantName: string;
 }
 
 export default function AcceptOrderModal({
   visible,
   onClose,
   order,
+  restaurantName,
 }: AcceptOrderModalProps) {
   const [mins, setMins] = useState(order.prep_time);
   const [acceptOrder, { isLoading: isAccepting }] = useAcceptOrderMutation();
@@ -106,6 +108,8 @@ export default function AcceptOrderModal({
     ]);
   };
 
+  // console.log(JSON.stringify(order, null, 2), "get-orderrr");
+
   // Calculate total items
   const totalItems = order.orderitem_set.reduce(
     (sum, item) => sum + item.quantity,
@@ -144,11 +148,11 @@ export default function AcceptOrderModal({
               <View className="flex-1 min-w-[120px]">
                 <View className="flex-row items-center mb-2">
                   <Image
-                    source={require("../assets/images/icon.png")}
+                    source={require("../assets/images/main_icon.png")}
                     className="w-7 h-7 mr-2 rounded-full"
                   />
                   <Text className="text-[#FB923C] font-bold text-base">
-                    Test restaurant
+                    {restaurantName}
                   </Text>
                 </View>
                 <Text className="font-bold text-2xl mb-1">#{order.id}</Text>

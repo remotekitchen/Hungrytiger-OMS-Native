@@ -1,4 +1,5 @@
 import { userLoggedOut } from "@/redux/feature/authentication/authenticationSlice";
+import { useGetRestaurantQuery } from "@/redux/feature/restaurant/restaurantApi";
 import {
   ArrowLeft,
   BarChart2,
@@ -77,6 +78,16 @@ export default function Sidebar({
   setShouldRenderRef.current = setShouldRender;
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
+
+  const { data: getRestaurants } = useGetRestaurantQuery({});
+
+  // console.log(
+  //   JSON.stringify(getRestaurants?.results[0], null, 2),
+  //   "get-res name"
+  // );
+
+  const restaurantLogo = getRestaurants?.results[0]?.logo;
+  const restaurantName = getRestaurants?.results[0]?.name;
 
   React.useEffect(() => {
     if (visible) {
@@ -169,7 +180,8 @@ export default function Sidebar({
         >
           <View className="items-center pt-10 pb-4 bg-white">
             <Image
-              source={require("../assets/images/icon.png")}
+              // source={require("../assets/images/icon.png")}
+              source={{ uri: restaurantLogo }}
               style={{
                 width: 64,
                 height: 64,
@@ -179,7 +191,7 @@ export default function Sidebar({
               resizeMode="cover"
             />
             <Text className="text-2xl font-extrabold text-black mb-2">
-              Tiger Eats
+              {restaurantName ? restaurantName : "Unknown Restaurant"}
             </Text>
           </View>
           <View className="flex-1 px-4">

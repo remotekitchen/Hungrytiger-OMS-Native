@@ -50,18 +50,18 @@ export const useRealtimeOrders = (restaurantId: number | undefined) => {
   // Play sound with infinite loop
   const playOrderSound = async () => {
     try {
-      console.log("Audio Debug: playOrderSound called");
+      // console.log("Audio Debug: playOrderSound called");
       setIsPlaying(true);
       await player.seekTo(0);
       await player.play();
-      console.log("Audio Debug: Initial play started");
+      // console.log("Audio Debug: Initial play started");
 
       // Set up infinite looping
       const startLooping = () => {
-        console.log("Audio Debug: Setting up loop interval");
+        // console.log("Audio Debug: Setting up loop interval");
         loopIntervalRef.current = setInterval(async () => {
           try {
-            console.log("Audio Debug: Loop iteration - restarting audio");
+            // console.log("Audio Debug: Loop iteration - restarting audio");
             // Always restart the audio as long as the interval is running
             await player.seekTo(0);
             await player.play();
@@ -82,15 +82,15 @@ export const useRealtimeOrders = (restaurantId: number | undefined) => {
   // Stop sound and clear loop
   const stopOrderSound = async () => {
     try {
-      console.log("Audio Debug: stopOrderSound called");
+      // console.log("Audio Debug: stopOrderSound called");
       setIsPlaying(false);
       if (loopIntervalRef.current) {
-        console.log("Audio Debug: Clearing loop interval");
+        // console.log("Audio Debug: Clearing loop interval");
         clearInterval(loopIntervalRef.current);
         loopIntervalRef.current = null;
       }
       await player.pause();
-      console.log("Audio Debug: Audio paused");
+      // console.log("Audio Debug: Audio paused");
     } catch (err) {
       console.error("Error stopping sound:", err);
     }
@@ -127,18 +127,18 @@ export const useRealtimeOrders = (restaurantId: number | undefined) => {
         (order: Order) => order.status === "pending"
       ).length;
 
-      console.log(
-        `Audio Debug: Pending orders: ${currentPendingCount}, Is playing: ${isPlaying}`
-      );
+      // console.log(
+      //   `Audio Debug: Pending orders: ${currentPendingCount}, Is playing: ${isPlaying}`
+      // );
 
       // Start playing if there are pending orders and we weren't playing before
       if (currentPendingCount > 0 && !isPlaying) {
-        console.log("Audio Debug: Starting audio loop");
+        // console.log("Audio Debug: Starting audio loop");
         playOrderSound();
       }
       // Stop playing if there are no pending orders and we were playing before
       else if (currentPendingCount === 0 && isPlaying) {
-        console.log("Audio Debug: Stopping audio loop");
+        // console.log("Audio Debug: Stopping audio loop");
         stopOrderSound();
       }
 

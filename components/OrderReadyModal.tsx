@@ -45,11 +45,13 @@ export default function OrderReadyModal({
   onClose,
   order,
   onReadyForDelivery,
+  restaurantName,
 }: {
   visible: boolean;
   onClose: () => void;
   order: Order;
   onReadyForDelivery: () => void;
+  restaurantName: string;
 }) {
   const [mins, setMins] = useState(order.prep_time);
   const [loading, setLoading] = useState(false);
@@ -105,11 +107,11 @@ export default function OrderReadyModal({
               <View className="flex-1 min-w-[120px]">
                 <View className="flex-row items-center mb-2">
                   <Image
-                    source={require("../assets/images/icon.png")}
+                    source={require("../assets/images/main_icon.png")}
                     className="w-7 h-7 mr-2 rounded-full"
                   />
                   <Text className="text-[#FB923C] font-bold text-base">
-                    Test restaurant
+                    {restaurantName}
                   </Text>
                 </View>
                 <Text className="font-bold text-2xl mb-1">#{order.id}</Text>

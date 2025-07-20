@@ -22,6 +22,12 @@ export default function OrdersSection() {
 
   const { data: getRestaurants } = useGetRestaurantQuery({});
 
+  // console.log(
+  //   JSON.stringify(getRestaurants?.results[0]?.name, null, 2),
+  //   "get-res name"
+  // );
+
+  const restaurantName = getRestaurants?.results[0]?.name;
   const restaurantId = getRestaurants?.results[0]?.id;
 
   const { categorizedOrders } = useRealtimeOrders(restaurantId);
@@ -116,11 +122,13 @@ export default function OrdersSection() {
       {selectedOrder && (
         <>
           <AcceptOrderModal
+            restaurantName={restaurantName}
             visible={acceptModalVisible}
             onClose={() => setAcceptModalVisible(false)}
             order={selectedOrder}
           />
           <OrderReadyModal
+            restaurantName={restaurantName}
             visible={readyModalVisible}
             onClose={() => setReadyModalVisible(false)}
             order={selectedOrder}
