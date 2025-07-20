@@ -36,27 +36,29 @@ interface Order {
   tax: number;
   discount: number;
   checkout_note?: string;
+  dropoff_contact_first_name?: string;
+  dropoff_contact_last_name?: string;
 }
 
-export default function OrderDetailsModal({
+export default function OrderReadyModal({
   visible,
   onClose,
   order,
-  onAccept,
+  onReadyForDelivery,
 }: {
   visible: boolean;
   onClose: () => void;
   order: Order;
-  onAccept: () => void;
+  onReadyForDelivery: () => void;
 }) {
   const [mins, setMins] = useState(order.prep_time);
   const [loading, setLoading] = useState(false);
 
-  const handleAccept = async () => {
+  const handleReadyForDelivery = async () => {
     setLoading(true);
     await new Promise((res) => setTimeout(res, 3000));
     setLoading(false);
-    onAccept();
+    onReadyForDelivery();
   };
 
   // Calculate total items
@@ -69,6 +71,12 @@ export default function OrderDetailsModal({
   const formatCurrency = (amount: number) => {
     return `BDT${amount.toFixed(2)}`;
   };
+
+  // Get customer name
+  const customerName =
+    order.dropoff_contact_first_name && order.dropoff_contact_last_name
+      ? `${order.dropoff_contact_first_name} ${order.dropoff_contact_last_name}`
+      : order.customer;
 
   return (
     <Modal visible={visible} animationType="fade" transparent={false}>
@@ -139,6 +147,42 @@ export default function OrderDetailsModal({
                   <Text className="text-2xl text-gray-700">+</Text>
                 </TouchableOpacity>
               </View>
+            </View>
+
+            {/* Customer and Rider Information Section */}
+            <View className="mx-3 my-2">
+              {/* Customer Section */}
+              <View className="flex-row items-center mb-3">
+                <View className="w-8 h-8 bg-gray-300 rounded-full items-center justify-center mr-3">
+                  <Text className="text-gray-600 text-lg">👤</Text>
+                </View>
+                <View className="flex-1">
+                  <Text className="text-[#E91E63] font-bold text-sm">
+                    Customer
+                  </Text>
+                  <Text className="font-bold text-base text-gray-800">
+                    {customerName}
+                  </Text>
+                </View>
+              </View>
+
+              {/* Rider Section */}
+              <View className="flex-row items-center">
+                <View className="w-8 h-8 bg-gray-300 rounded-full items-center justify-center mr-3">
+                  <Text className="text-gray-600 text-lg">🚴</Text>
+                </View>
+                <View className="flex-1">
+                  <Text className="text-[#E91E63] font-bold text-sm">
+                    Riders
+                  </Text>
+                  <Text className="text-gray-600 text-base">
+                    Rider on the way...
+                  </Text>
+                </View>
+              </View>
+
+              {/* Divider Line */}
+              <View className="h-px bg-gray-300 mt-3" />
             </View>
 
             {/* Items Section - Updated to match screenshot */}
@@ -228,24 +272,35 @@ export default function OrderDetailsModal({
               </View>
             </View>
           </ScrollView>
-          {/* Accept Order Button */}
+          {/* Ready for Delivery Button */}
           <View className="p-5 bg-white border-t border-[#eee]">
-            <TouchableOpacity
-              onPress={handleAccept}
-              disabled={loading}
-              className="bg-green-500 rounded-xl py-5 flex-row items-center justify-center px-5"
-              style={{ opacity: loading ? 0.7 : 1 }}
-            >
-              {loading ? (
-                <ActivityIndicator color="#fff" className="mr-2" />
-              ) : null}
-              <Text className="text-white font-bold text-xl flex-1 text-center">
-                Accept Order
-              </Text>
-              <Text className="text-white font-bold text-base ml-3">
-                {totalItems} item{totalItems > 1 ? "s" : ""}
-              </Text>
-            </TouchableOpacity>
+            {order.status === "accepted" ? (
+              <TouchableOpacity
+                onPress={handleReadyForDelivery}
+                disabled={loading}
+                className="bg-green-500 rounded-xl py-5 flex-row items-center justify-center px-5"
+                style={{ opacity: loading ? 0.7 : 1 }}
+              >
+                {loading ? (
+                  <ActivityIndicator color="#fff" className="mr-2" />
+                ) : null}
+                <Text className="text-white font-bold text-xl flex-1 text-center">
+                  Ready for Pickup
+                </Text>
+                <Text className="text-white font-bold text-base ml-3">
+                  {totalItems} item{totalItems > 1 ? "s" : ""}
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <View className="bg-gray-300 rounded-xl py-5 flex-row items-center justify-center px-5">
+                <Text className="text-gray-600 font-bold text-xl flex-1 text-center">
+                  Ready for Pickup
+                </Text>
+                <Text className="text-gray-600 font-bold text-base ml-3">
+                  {totalItems} item{totalItems > 1 ? "s" : ""}
+                </Text>
+              </View>
+            )}
           </View>
         </MotiView>
       </View>

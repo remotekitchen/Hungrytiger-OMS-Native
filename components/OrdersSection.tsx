@@ -1,3 +1,9 @@
+import { useRealtimeOrders } from "@/hooks/useRealtimeOrders";
+import {
+  selectToken,
+  selectUser,
+} from "@/redux/feature/authentication/authenticationSlice";
+import { useGetRestaurantQuery } from "@/redux/feature/restaurant/restaurantApi";
 import * as Updates from "expo-updates";
 import React, { useCallback, useState } from "react";
 import {
@@ -6,29 +12,30 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useSelector } from "react-redux";
 import OrderAcceptedModal from "./OrderAcceptedModal";
 import OrderCard from "./OrderCard";
 import OrderCategoryHeader from "./OrderCategoryHeader";
 import OrderDetailsModal from "./OrderDetailsModal";
 import OrderEmptyCard from "./OrderEmptyCard";
+import OrderReadyModal from "./OrderReadyModal";
 
 export default function OrdersSection() {
-  const [hasOrders, setHasOrders] = useState(true); // Toggle for demo
   const [refreshing, setRefreshing] = useState(false);
   const [detailsVisible, setDetailsVisible] = useState(false);
   const [acceptedVisible, setAcceptedVisible] = useState(false);
-  const [accepted, setAccepted] = useState(true); // For demo, true shows accepted order
+  const [readyModalVisible, setReadyModalVisible] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
 
-  // Demo order
-  const order = { id: "125", items: 1, mins: 17, code: "XXXX-1234" };
-  const acceptedOrder = {
-    id: "00",
-    code: "XXXX-1234",
-    items: 1,
-    mins: 8,
-    test: true,
-    status: "Rider is on the way",
-  };
+  const user = useSelector(selectUser);
+  const token = useSelector(selectToken);
+
+  const { data: getRestaurants } = useGetRestaurantQuery({});
+
+  const restaurantId = getRestaurants?.results[0]?.id;
+
+  const { categorizedOrders, error, isLoading } =
+    useRealtimeOrders(restaurantId);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -46,8 +53,21 @@ export default function OrdersSection() {
     setAcceptedVisible(true);
     setTimeout(() => {
       setAcceptedVisible(false);
-      // Optionally, reset hasOrders or navigate
     }, 3000);
+  };
+
+  const handleReadyForDelivery = () => {
+    setReadyModalVisible(false);
+    // Handle ready for delivery logic here
+  };
+
+  const handleOrderPress = (order: any, type: "new" | "accepted") => {
+    setSelectedOrder(order);
+    if (type === "new") {
+      setDetailsVisible(true);
+    } else if (type === "accepted") {
+      setReadyModalVisible(true);
+    }
   };
 
   return (
@@ -66,14 +86,20 @@ export default function OrdersSection() {
         {/* Top row: New & Upcoming */}
         <View className="flex-row justify-between mb-6">
           <View className="flex-1 mr-2">
-            <OrderCategoryHeader title="New" count={hasOrders ? 1 : 0} />
-            {hasOrders ? (
-              <TouchableOpacity
-                activeOpacity={0.85}
-                onPress={() => setDetailsVisible(true)}
-              >
-                <OrderCard order={order} />
-              </TouchableOpacity>
+            <OrderCategoryHeader
+              title="New"
+              count={categorizedOrders.newOrders.length}
+            />
+            {categorizedOrders.newOrders.length > 0 ? (
+              categorizedOrders.newOrders.map((order) => (
+                <TouchableOpacity
+                  key={order.id}
+                  activeOpacity={0.85}
+                  onPress={() => handleOrderPress(order, "new")}
+                >
+                  <OrderCard order={order} />
+                </TouchableOpacity>
+              ))
             ) : (
               <OrderEmptyCard text="No new orders" />
             )}
@@ -83,22 +109,46 @@ export default function OrdersSection() {
             <OrderEmptyCard text="No upcoming orders" />
           </View>
         </View>
+
         {/* Accepted row */}
         <View className="mt-2">
-          <OrderCategoryHeader title="Accepted" count={accepted ? 1 : 0} />
-          {accepted ? (
-            <OrderCard order={acceptedOrder} accepted />
+          <OrderCategoryHeader
+            title="Accepted"
+            count={categorizedOrders.acceptedOrders.length}
+          />
+          {categorizedOrders.acceptedOrders.length > 0 ? (
+            categorizedOrders.acceptedOrders.map((order) => (
+              <TouchableOpacity
+                key={order.id}
+                activeOpacity={0.85}
+                onPress={() => handleOrderPress(order, "accepted")}
+              >
+                <OrderCard order={order} accepted />
+              </TouchableOpacity>
+            ))
           ) : (
             <OrderEmptyCard text="No accepted orders" />
           )}
         </View>
       </ScrollView>
-      <OrderDetailsModal
-        visible={detailsVisible}
-        onClose={() => setDetailsVisible(false)}
-        order={order}
-        onAccept={handleAccept}
-      />
+
+      {selectedOrder && (
+        <>
+          <OrderDetailsModal
+            visible={detailsVisible}
+            onClose={() => setDetailsVisible(false)}
+            order={selectedOrder}
+            onAccept={handleAccept}
+          />
+          <OrderReadyModal
+            visible={readyModalVisible}
+            onClose={() => setReadyModalVisible(false)}
+            order={selectedOrder}
+            onReadyForDelivery={handleReadyForDelivery}
+          />
+        </>
+      )}
+
       <OrderAcceptedModal visible={acceptedVisible} />
     </>
   );

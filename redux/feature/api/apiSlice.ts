@@ -10,12 +10,18 @@ export const apiSlice = createApi({
 
       try {
         const authData = await AsyncStorage.getItem("auth");
-        const token: string | null = authData
-          ? JSON.parse(authData)?.token
-          : null;
+        if (authData) {
+          const parsedAuth = JSON.parse(authData);
+          const token = parsedAuth?.token;
 
-        if (token) {
-          headers.set("Authorization", `token ${token}`);
+          if (token) {
+            headers.set("Authorization", `token ${token}`);
+            // console.log("Authorization header set:", `token ${token}`);
+          } else {
+            console.log("No token found in auth data");
+          }
+        } else {
+          console.log("No auth data found in AsyncStorage");
         }
       } catch (err) {
         console.error("Failed to load auth token:", err);
@@ -24,6 +30,6 @@ export const apiSlice = createApi({
       return headers;
     },
   }),
-  tagTypes: ["HOTEL", "ACCOUNT"],
+  tagTypes: ["HOTEL", "ACCOUNT", "RESTAURANT", "ORDER"],
   endpoints: () => ({}),
 });
