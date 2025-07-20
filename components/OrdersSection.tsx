@@ -1,8 +1,4 @@
 import { useRealtimeOrders } from "@/hooks/useRealtimeOrders";
-import {
-  selectToken,
-  selectUser,
-} from "@/redux/feature/authentication/authenticationSlice";
 import { useGetRestaurantQuery } from "@/redux/feature/restaurant/restaurantApi";
 import * as Updates from "expo-updates";
 import React, { useCallback, useState } from "react";
@@ -12,49 +8,34 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useSelector } from "react-redux";
-import OrderAcceptedModal from "./OrderAcceptedModal";
+import AcceptOrderModal from "./AcceptOrderModal";
 import OrderCard from "./OrderCard";
 import OrderCategoryHeader from "./OrderCategoryHeader";
-import OrderDetailsModal from "./OrderDetailsModal";
 import OrderEmptyCard from "./OrderEmptyCard";
 import OrderReadyModal from "./OrderReadyModal";
 
 export default function OrdersSection() {
   const [refreshing, setRefreshing] = useState(false);
-  const [detailsVisible, setDetailsVisible] = useState(false);
-  const [acceptedVisible, setAcceptedVisible] = useState(false);
+  const [acceptModalVisible, setAcceptModalVisible] = useState(false);
   const [readyModalVisible, setReadyModalVisible] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
-
-  const user = useSelector(selectUser);
-  const token = useSelector(selectToken);
 
   const { data: getRestaurants } = useGetRestaurantQuery({});
 
   const restaurantId = getRestaurants?.results[0]?.id;
 
-  const { categorizedOrders, error, isLoading } =
-    useRealtimeOrders(restaurantId);
+  const { categorizedOrders } = useRealtimeOrders(restaurantId);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
       await Updates.reloadAsync();
-    } catch (e) {
-      // handle error
+    } catch {
+      // handle error silently
     } finally {
       setRefreshing(false);
     }
   }, []);
-
-  const handleAccept = () => {
-    setDetailsVisible(false);
-    setAcceptedVisible(true);
-    setTimeout(() => {
-      setAcceptedVisible(false);
-    }, 3000);
-  };
 
   const handleReadyForDelivery = () => {
     setReadyModalVisible(false);
@@ -64,7 +45,7 @@ export default function OrdersSection() {
   const handleOrderPress = (order: any, type: "new" | "accepted") => {
     setSelectedOrder(order);
     if (type === "new") {
-      setDetailsVisible(true);
+      setAcceptModalVisible(true);
     } else if (type === "accepted") {
       setReadyModalVisible(true);
     }
@@ -134,11 +115,10 @@ export default function OrdersSection() {
 
       {selectedOrder && (
         <>
-          <OrderDetailsModal
-            visible={detailsVisible}
-            onClose={() => setDetailsVisible(false)}
+          <AcceptOrderModal
+            visible={acceptModalVisible}
+            onClose={() => setAcceptModalVisible(false)}
             order={selectedOrder}
-            onAccept={handleAccept}
           />
           <OrderReadyModal
             visible={readyModalVisible}
@@ -148,8 +128,6 @@ export default function OrdersSection() {
           />
         </>
       )}
-
-      <OrderAcceptedModal visible={acceptedVisible} />
     </>
   );
 }

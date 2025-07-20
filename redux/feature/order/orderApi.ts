@@ -15,7 +15,34 @@ export const ordersApi = apiSlice.injectEndpoints({
       // Keep cache for 30 seconds
       keepUnusedDataFor: 30,
     }),
+
+    acceptOrder: builder.mutation({
+      query: ({ orderId, status, prep_time }) => ({
+        url: `api/billing/v2/order/item/?id=${orderId}`,
+        method: "PATCH",
+        body: {
+          status: status,
+          prep_time: prep_time,
+        },
+      }),
+      invalidatesTags: ["ORDER"],
+    }),
+
+    rejectOrder: builder.mutation({
+      query: ({ orderId, status }) => ({
+        url: `api/billing/v2/order/item/?id=${orderId}`,
+        method: "PATCH",
+        body: {
+          status: status,
+        },
+      }),
+      invalidatesTags: ["ORDER"],
+    }),
   }),
 });
 
-export const { useGetOrdersQuery } = ordersApi;
+export const {
+  useGetOrdersQuery,
+  useAcceptOrderMutation,
+  useRejectOrderMutation,
+} = ordersApi;
