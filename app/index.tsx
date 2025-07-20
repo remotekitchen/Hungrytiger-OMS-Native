@@ -1,9 +1,10 @@
 import { useLoginMutation } from "@/redux/feature/authentication/authenticationApi";
 import { userLoggedIn } from "@/redux/feature/authentication/authenticationSlice";
+import { requestAllPermissions } from "@/utils/requestPermissions";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Updates from "expo-updates";
 import { Eye, EyeOff } from "lucide-react-native";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Alert,
   RefreshControl,
@@ -79,6 +80,19 @@ export default function HomeScreen() {
       setRefreshing(false);
     }
   }, []);
+
+  useEffect(() => {
+    const askPermissions = async () => {
+      const result = await requestAllPermissions();
+
+      if ("error" in result) {
+        Alert.alert("Permission Error", result.error);
+      }
+    };
+
+    askPermissions();
+  }, []);
+
 
   return (
     <SafeAreaView className="flex-1 bg-white">

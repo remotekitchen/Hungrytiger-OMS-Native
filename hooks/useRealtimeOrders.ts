@@ -1,5 +1,5 @@
 import { useGetOrdersQuery } from "@/redux/feature/order/orderApi";
-import { Audio } from "expo-av";
+import { useAudioPlayer } from "expo-audio";
 import { useEffect, useRef, useState } from "react";
 
 interface Order {
@@ -40,72 +40,81 @@ export const useRealtimeOrders = (restaurantId: number | undefined) => {
   } = useGetOrdersQuery({ restaurantId }, { skip: !restaurantId });
 
   const intervalRef = useRef<number | null>(null);
-  const soundRef = useRef<Audio.Sound | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
   const [previousPendingCount, setPreviousPendingCount] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const loopIntervalRef = useRef<number | null>(null);
 
-  // Load and play sound
+  // 👇 Setup audio player using expo-audio
+  const player = useAudioPlayer(require("../assets/sound/order_sound.mp3"));
+
+  // Play sound with infinite loop
   const playOrderSound = async () => {
     try {
-      if (!soundRef.current) {
-        const { sound } = await Audio.Sound.createAsync(
-          require("../assets/sound/order_sound.mp3"),
-          {
-            shouldPlay: true,
-            isLooping: true,
-            volume: 0.8,
+      console.log("Audio Debug: playOrderSound called");
+      setIsPlaying(true);
+      await player.seekTo(0);
+      await player.play();
+      console.log("Audio Debug: Initial play started");
+
+      // Set up infinite looping
+      const startLooping = () => {
+        console.log("Audio Debug: Setting up loop interval");
+        loopIntervalRef.current = setInterval(async () => {
+          try {
+            console.log("Audio Debug: Loop iteration - restarting audio");
+            // Always restart the audio as long as the interval is running
+            await player.seekTo(0);
+            await player.play();
+          } catch (err) {
+            console.error("Error in audio loop:", err);
           }
-        );
-        soundRef.current = sound;
-        setIsPlaying(true);
-      } else if (!isPlaying) {
-        await soundRef.current.setIsLoopingAsync(true);
-        await soundRef.current.playAsync();
-        setIsPlaying(true);
-      }
-    } catch (error) {
-      console.error("Error playing sound:", error);
+        }, 2000); // Restart every 2 seconds for seamless looping
+      };
+
+      // Start looping after a short delay
+      setTimeout(startLooping, 100);
+    } catch (err) {
+      console.error("Error playing sound:", err);
+      setIsPlaying(false);
     }
   };
 
-  // Stop sound
+  // Stop sound and clear loop
   const stopOrderSound = async () => {
     try {
-      if (soundRef.current && isPlaying) {
-        await soundRef.current.stopAsync();
-        setIsPlaying(false);
+      console.log("Audio Debug: stopOrderSound called");
+      setIsPlaying(false);
+      if (loopIntervalRef.current) {
+        console.log("Audio Debug: Clearing loop interval");
+        clearInterval(loopIntervalRef.current);
+        loopIntervalRef.current = null;
       }
-    } catch (error) {
-      console.error("Error stopping sound:", error);
+      await player.pause();
+      console.log("Audio Debug: Audio paused");
+    } catch (err) {
+      console.error("Error stopping sound:", err);
     }
   };
-
-  // Cleanup sound on unmount
-  useEffect(() => {
-    return () => {
-      if (soundRef.current) {
-        soundRef.current.unloadAsync();
-      }
-    };
-  }, []);
 
   // Set up polling
   useEffect(() => {
     if (restaurantId) {
-      // Clear any existing interval
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
 
-      // Set up new interval for polling
       intervalRef.current = setInterval(() => {
         refetch();
       }, 1000);
 
-      // Cleanup on unmount
       return () => {
         if (intervalRef.current) {
           clearInterval(intervalRef.current);
+        }
+        // Clean up audio loop interval
+        if (loopIntervalRef.current) {
+          clearInterval(loopIntervalRef.current);
+          loopIntervalRef.current = null;
         }
       };
     }
@@ -115,21 +124,27 @@ export const useRealtimeOrders = (restaurantId: number | undefined) => {
   useEffect(() => {
     if (ordersData?.results) {
       const currentPendingCount = ordersData.results.filter(
-        (order) => order.status === "pending"
+        (order: Order) => order.status === "pending"
       ).length;
 
-      // If there are pending orders and we weren't playing before, start playing
-      if (currentPendingCount > 0 && previousPendingCount === 0) {
+      console.log(
+        `Audio Debug: Pending orders: ${currentPendingCount}, Is playing: ${isPlaying}`
+      );
+
+      // Start playing if there are pending orders and we weren't playing before
+      if (currentPendingCount > 0 && !isPlaying) {
+        console.log("Audio Debug: Starting audio loop");
         playOrderSound();
       }
-      // If there are no pending orders and we were playing, stop playing
-      else if (currentPendingCount === 0 && previousPendingCount > 0) {
+      // Stop playing if there are no pending orders and we were playing before
+      else if (currentPendingCount === 0 && isPlaying) {
+        console.log("Audio Debug: Stopping audio loop");
         stopOrderSound();
       }
 
       setPreviousPendingCount(currentPendingCount);
     }
-  }, [ordersData?.results, previousPendingCount]);
+  }, [ordersData?.results, isPlaying, previousPendingCount]);
 
   // Categorize orders by status
   const categorizeOrders = (orders: Order[]) => {
@@ -155,7 +170,7 @@ export const useRealtimeOrders = (restaurantId: number | undefined) => {
     error,
     isLoading,
     refetch,
+    stopOrderSound,
     isPlaying,
-    stopOrderSound, // Expose this function to allow manual stop
   };
 };
