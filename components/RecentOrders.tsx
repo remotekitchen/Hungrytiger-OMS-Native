@@ -1,10 +1,3 @@
-import React from "react";
-import { Text, View } from "react-native";
+import RecentOrders from "./RecentOrders/index";
 
-export default function RecentOrders() {
-  return (
-    <View className="flex-1 justify-center items-center bg-white">
-      <Text className="text-lg text-black">Recent Orders Page</Text>
-    </View>
-  );
-}
+export default RecentOrders;

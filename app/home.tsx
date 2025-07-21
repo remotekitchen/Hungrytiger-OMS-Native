@@ -114,7 +114,7 @@ export default function Home() {
       >
         <Header
           onMenuPress={() => setSidebarOpen(true)}
-          onQrPress={() => {}}
+          onQrPress={() => alert("QR Pressed")}
           onOpenPress={() => setStoreStatusModalVisible(true)}
           storeStatusLabel={storeStatusLabel}
           isPaused={storeStatus.status === "pause"}
