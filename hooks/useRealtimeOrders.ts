@@ -154,10 +154,10 @@ export const useRealtimeOrders = (restaurantId: number | undefined) => {
     );
     // Debug log
     if (typeof window !== "undefined") {
-      console.log(
-        "Accepted Orders:",
-        acceptedOrders.map((o) => ({ id: o.id, status: o.status }))
-      );
+      // console.log(
+      //   "Accepted Orders:",
+      //   acceptedOrders.map((o) => ({ id: o.id, status: o.status }))
+      // );
     }
     // Add counts for each status
     const statusCounts = {
