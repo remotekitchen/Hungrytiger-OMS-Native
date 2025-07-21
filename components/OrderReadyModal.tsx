@@ -1,5 +1,8 @@
-import { useReadyForPickupMutation } from "@/redux/feature/order/orderApi";
-import { ArrowLeft, Printer } from "lucide-react-native";
+import {
+  useReadyForPickupMutation,
+  useReceivedPaymentMutation,
+} from "@/redux/feature/order/orderApi";
+import { ArrowLeft, CheckCheck, Printer } from "lucide-react-native";
 import { MotiView } from "moti";
 import React, { useState } from "react";
 import {
@@ -11,6 +14,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import OrderAcceptedModal from "./OrderAcceptedModal";
 import OrderReadyStatusModal from "./OrderReadyStatusModal";
 
 interface OrderItem {
@@ -60,6 +64,11 @@ export default function OrderReadyModal({
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [readyForPickup, { isLoading: isReady, isSuccess }] =
     useReadyForPickupMutation();
+  const [
+    receivedPayment,
+    { isLoading: isReceiving, isSuccess: isPaymentSuccess },
+  ] = useReceivedPaymentMutation();
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   const handleReadyForDelivery = async () => {
     setLoading(true);
@@ -73,6 +82,25 @@ export default function OrderReadyModal({
         setShowStatusModal(false);
         setLoading(false);
         onReadyForDelivery();
+      }, 2000);
+    } catch (error) {
+      setLoading(false);
+      // Optionally show error
+    }
+  };
+
+  const handlePaymentReceived = async () => {
+    setLoading(true);
+    try {
+      await receivedPayment({
+        orderId: order.id,
+        status: "completed",
+      }).unwrap();
+      setShowPaymentModal(true);
+      setTimeout(() => {
+        setShowPaymentModal(false);
+        setLoading(false);
+        onClose(); // Go back after modal
       }, 2000);
     } catch (error) {
       setLoading(false);
@@ -312,34 +340,31 @@ export default function OrderReadyModal({
                 </Text>
               </TouchableOpacity>
             ) : (
-              // <View className="bg-gray-300 rounded-xl py-5 flex-row items-center justify-center px-5">
-              //   <Text className="text-gray-600 font-bold text-xl flex-1 text-center">
-              //     Received Payment
-              //   </Text>
-              //   <Text className="text-gray-600 font-bold text-base ml-3">
-              //     {totalItems} item{totalItems > 1 ? "s" : ""}
-              //   </Text>
-              // </View>
               <TouchableOpacity
-                // onPress={}
-                // disabled={loading || isReady}
-                className="bg-green-500 rounded-xl py-5 flex-row items-center justify-center px-5"
-                style={{ opacity: loading || isReady ? 0.7 : 1 }}
+                onPress={handlePaymentReceived}
+                disabled={loading || isReceiving}
+                className="bg-blue-700 rounded-xl py-5 flex-row items-center justify-center px-5"
+                style={{ opacity: loading || isReceiving ? 0.7 : 1 }}
               >
-                {loading || isReady ? (
+                {loading || isReceiving ? (
                   <ActivityIndicator color="#fff" className="mr-2" />
                 ) : null}
                 <Text className="text-white font-bold text-xl flex-1 text-center">
                   Payment Received
                 </Text>
-                {/* <Text className="text-white font-bold text-base ml-3">
-                  {totalItems} item{totalItems > 1 ? "s" : ""}
-                </Text> */}
               </TouchableOpacity>
             )}
           </View>
           {/* Show OrderReadyStatusModal if needed */}
           <OrderReadyStatusModal visible={showStatusModal} />
+          {/* Show Payment Completed Modal */}
+          <OrderAcceptedModal
+            visible={showPaymentModal}
+            bgColor="bg-blue-700"
+            icon={<CheckCheck size={64} color="#fff" className="mb-4" />}
+            title="Order Completed!"
+            message="Payment received and order is now completed."
+          />
         </MotiView>
       </View>
     </Modal>

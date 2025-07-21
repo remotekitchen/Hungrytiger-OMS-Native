@@ -48,6 +48,16 @@ export const ordersApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["ORDER"],
     }),
+    receivedPayment: builder.mutation({
+      query: ({ orderId, status }) => ({
+        url: `api/billing/v2/order/item/?id=${orderId}`,
+        method: "PATCH",
+        body: {
+          status: status,
+        },
+      }),
+      invalidatesTags: ["ORDER"],
+    }),
   }),
 });
 
@@ -56,4 +66,5 @@ export const {
   useAcceptOrderMutation,
   useRejectOrderMutation,
   useReadyForPickupMutation,
+  useReceivedPaymentMutation,
 } = ordersApi;
