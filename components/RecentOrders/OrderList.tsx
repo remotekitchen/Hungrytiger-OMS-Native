@@ -1,9 +1,14 @@
 import React from "react";
-import { FlatList, Text, View } from "react-native";
+import { FlatList, Text, TouchableOpacity, View } from "react-native";
 import OrderItem from "./OrderItem";
 import { Order } from "./types";
 
-export default function OrderList({ orders }: { orders: Order[] }) {
+interface OrderListProps {
+  orders: Order[];
+  onOrderPress?: (order: Order) => void;
+}
+
+export default function OrderList({ orders, onOrderPress }: OrderListProps) {
   if (orders.length === 0) {
     return (
       <View className="flex-1 items-center justify-center">
@@ -15,7 +20,18 @@ export default function OrderList({ orders }: { orders: Order[] }) {
     <FlatList
       data={orders}
       keyExtractor={(item) => item.id.toString()}
-      renderItem={({ item }) => <OrderItem order={item} />}
+      renderItem={({ item }) =>
+        onOrderPress ? (
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => onOrderPress(item)}
+          >
+            <OrderItem order={item} />
+          </TouchableOpacity>
+        ) : (
+          <OrderItem order={item} />
+        )
+      }
     />
   );
 }

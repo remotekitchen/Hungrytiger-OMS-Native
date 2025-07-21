@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Text, TextInput, View } from "react-native";
 import FilterDropdown from "./FilterDropdown";
 import { useRecentOrders } from "./hooks";
+import OrderDetailsModal from "./OrderDetailsModal";
 import OrderList from "./OrderList";
 import Tabs from "./Tabs";
 
@@ -43,12 +44,19 @@ export default function RecentOrders() {
   } = useRecentOrders();
 
   const [search, setSearch] = useState("");
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
   const filteredOrders = orders.filter(
     (order: any) =>
       order.customer.toLowerCase().includes(search.toLowerCase()) ||
       order.order_id.toLowerCase().includes(search.toLowerCase())
   );
+
+  const handleOrderPress = (order: any) => {
+    setSelectedOrder(order);
+    setModalVisible(true);
+  };
 
   if (isLoading) {
     return (
@@ -90,7 +98,12 @@ export default function RecentOrders() {
           orderCounts={orderCounts}
         />
       </View>
-      <OrderList orders={filteredOrders} />
+      <OrderList orders={filteredOrders} onOrderPress={handleOrderPress} />
+      <OrderDetailsModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        order={selectedOrder}
+      />
     </View>
   );
 }
