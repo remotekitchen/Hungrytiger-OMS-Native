@@ -1,3 +1,4 @@
+import { Calendar as CalendarIcon } from "lucide-react-native";
 import { MotiView } from "moti";
 import React, { useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
@@ -46,9 +47,14 @@ export default function Tabs({ dateFilter, setDateFilter }: TabsProps) {
           )}
         </TouchableOpacity>
         <TouchableOpacity
-          className="flex-1 items-center justify-center py-2"
+          className="flex-1 flex-row items-center justify-center py-2 gap-x-1"
           onPress={() => setModalVisible(true)}
         >
+          <CalendarIcon
+            size={18}
+            color={dateFilter.mode === "custom" ? "#000" : "#888"}
+            className="mr-1"
+          />
           <Text
             className={`font-bold ${
               dateFilter.mode === "custom" ? "text-black" : "text-gray-500"

@@ -58,6 +58,16 @@ export const ordersApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["ORDER"],
     }),
+
+    // order list
+
+    orderHistory: builder.query({
+      query: ({ start_date, end_date }) => ({
+        url: `api/billing/v1/order/merchant/?history=true&page_size=300&start_date=${start_date}&end_date=${end_date}`,
+        method: "GET",
+      }),
+      providesTags: ["ORDER"],
+    }),
   }),
 });
 
@@ -67,4 +77,5 @@ export const {
   useRejectOrderMutation,
   useReadyForPickupMutation,
   useReceivedPaymentMutation,
+  useOrderHistoryQuery,
 } = ordersApi;

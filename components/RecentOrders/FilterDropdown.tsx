@@ -17,7 +17,7 @@ interface FilterDropdownProps {
 
 const filterOptions: { label: string; value: FilterType }[] = [
   { label: "All", value: "all" },
-  { label: "Ongoing", value: "ongoing" },
+  { label: "Rejected", value: "ongoing" },
   { label: "Completed", value: "completed" },
   { label: "Cancelled", value: "cancelled" },
 ];

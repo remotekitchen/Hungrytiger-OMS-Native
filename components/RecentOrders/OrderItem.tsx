@@ -1,3 +1,4 @@
+import { User } from "lucide-react-native";
 import { MotiView } from "moti";
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
@@ -28,7 +29,10 @@ export default function OrderItem({ order }: { order: Order }) {
           <Text className="text-gray-500">
             #{order.id} {order.order_id}
           </Text>
-          <Text className="text-gray-500">🧑 {order.customer}</Text>
+          <View className="flex-row items-center mt-1">
+            <User size={16} color="#222" className="mr-1" />
+            <Text className="text-gray-500">{order.customer}</Text>
+          </View>
         </View>
         <View className="items-end">
           <Text
