@@ -1,10 +1,12 @@
 import { useRealtimeOrders } from "@/hooks/useRealtimeOrders";
 import { useGetRestaurantQuery } from "@/redux/feature/restaurant/restaurantApi";
 import * as Updates from "expo-updates";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
+  Image,
   RefreshControl,
   ScrollView,
+  Text,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -19,6 +21,8 @@ export default function OrdersSection() {
   const [acceptModalVisible, setAcceptModalVisible] = useState(false);
   const [readyModalVisible, setReadyModalVisible] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [showEmptyState, setShowEmptyState] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { data: getRestaurants } = useGetRestaurantQuery({});
 
@@ -31,6 +35,48 @@ export default function OrdersSection() {
   const restaurantId = getRestaurants?.results[0]?.id;
 
   const { categorizedOrders } = useRealtimeOrders(restaurantId);
+
+  // Helper to check if there are any orders
+  const hasOrders =
+    categorizedOrders.newOrders.length > 0 ||
+    categorizedOrders.acceptedOrders.length > 0;
+
+  // Reset timer and hide empty state on orders or rerender
+  useEffect(() => {
+    setShowEmptyState(false);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    if (!hasOrders) {
+      timerRef.current = setTimeout(() => {
+        setShowEmptyState(true);
+      }, 15000);
+    }
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [hasOrders]);
+
+  // Reset timer on any user interaction
+  const handleUserInteraction = () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setShowEmptyState(false);
+    if (!hasOrders) {
+      timerRef.current = setTimeout(() => {
+        setShowEmptyState(true);
+      }, 15000);
+    }
+  };
+
+  // Auto open AcceptOrderModal when a new order arrives
+  useEffect(() => {
+    if (
+      categorizedOrders.newOrders.length > 0 &&
+      !acceptModalVisible &&
+      (!selectedOrder || selectedOrder.id !== categorizedOrders.newOrders[0].id)
+    ) {
+      setSelectedOrder(categorizedOrders.newOrders[0]);
+      setAcceptModalVisible(true);
+    }
+  }, [categorizedOrders.newOrders, acceptModalVisible, selectedOrder]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -57,6 +103,95 @@ export default function OrdersSection() {
     }
   };
 
+  if (showEmptyState && !hasOrders) {
+    return (
+      <ScrollView
+        className="flex-1 bg-white"
+        contentContainerStyle={{
+          flexGrow: 1,
+          justifyContent: "flex-start",
+          alignItems: "center",
+          marginTop: 48,
+        }}
+        scrollEventThrottle={16}
+      >
+        <Image
+          source={require("../assets/images/bg.png")}
+          style={{ width: 120, height: 120, marginBottom: 24 }}
+          resizeMode="contain"
+        />
+        <Text className="text-2xl font-bold text-black text-center mb-2">
+          No active orders
+        </Text>
+        <Text className="text-center text-gray-700 mb-6 px-6">
+          Use this time efficiently: Increase your profits by keeping your
+          business up to date.
+        </Text>
+        <View className="w-full px-4">
+          <View className="flex-row mb-3">
+            <TouchableOpacity
+              className="flex-1 bg-yellow-200 rounded-xl shadow p-4 mr-2 items-center"
+              onPress={() => {
+                /* TODO: handle update menu */
+              }}
+            >
+              <Text className="text-yellow-700 text-2xl mb-1">🍽️</Text>
+              <Text className="font-bold text-base text-yellow-700 mb-1 text-center">
+                Update your menu
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              className="flex-1 bg-orange-100 rounded-xl shadow p-4 ml-2 items-center"
+              onPress={() => {
+                /* TODO: handle avoidable wait time */
+              }}
+            >
+              <Text className="text-orange-500 text-2xl mb-1">🕒</Text>
+              <Text className="font-bold text-base text-orange-500 mb-1 text-center">
+                Avoidable wait time
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <View className="flex-row mb-3">
+            <TouchableOpacity
+              className="flex-1 bg-yellow-200 rounded-xl shadow p-4 mr-2 items-center"
+              onPress={() => {
+                /* TODO: handle check performance */
+              }}
+            >
+              <Text className="text-yellow-700 text-2xl mb-1">📈</Text>
+              <Text className="font-bold text-base text-yellow-700 mb-1 text-center">
+                Check your Performance
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              className="flex-1 bg-orange-100 rounded-xl shadow p-4 ml-2 items-center"
+              onPress={() => {
+                /* TODO: handle see new features */
+              }}
+            >
+              <Text className="text-orange-500 text-2xl mb-1">✨</Text>
+              <Text className="font-bold text-base text-orange-500 mb-1 text-center">
+                See new Features
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <TouchableOpacity
+            className="bg-yellow-200 rounded-xl shadow p-4 items-center"
+            onPress={() => {
+              /* TODO: handle help center */
+            }}
+          >
+            <Text className="text-yellow-700 text-2xl mb-1">ℹ️</Text>
+            <Text className="font-bold text-base text-yellow-700 mb-1">
+              Visit our Help Center
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    );
+  }
+
   return (
     <>
       <ScrollView
@@ -69,6 +204,9 @@ export default function OrdersSection() {
             progressBackgroundColor="#fff"
           />
         }
+        onTouchStart={handleUserInteraction}
+        onScroll={handleUserInteraction}
+        scrollEventThrottle={16}
       >
         {/* Top row: New & Upcoming */}
         <View className="flex-row justify-between mb-6">
