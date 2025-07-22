@@ -1,11 +1,13 @@
-import { ArrowLeft, Pencil } from "lucide-react-native";
+import { ArrowLeft, ChevronDown, Pencil } from "lucide-react-native";
 import { AnimatePresence, MotiView } from "moti";
 import React, { useState } from "react";
 import {
   Image,
   Modal,
+  ScrollView,
   Switch,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -15,41 +17,71 @@ const mockMenuItems = [
     name: "Chicken Biryani Half",
     image: require("../../assets/images/icon.png"),
     available: true,
+    category: "বিরিয়ানি",
+    price: 79.0,
+    description:
+      "সুগন্ধি মসলা ও চালের স্তরে তৈরি স্বাদে ভরপুর বিরিয়ানি, আপনার পছন্দের মাংস বা শাকসবজির সাথে পরিবেশিত।",
   },
   {
     name: "Chicken Biryani Full",
     image: require("../../assets/images/icon.png"),
     available: true,
+    category: "বিরিয়ানি",
+    price: 149.0,
+    description: "ফুল প্লেট বিরিয়ানি, সুগন্ধি চাল ও মসলার মিশেলে।",
   },
   {
     name: "Egg Khichuri",
     image: require("../../assets/images/icon.png"),
     available: false,
+    category: "খিচুরি",
+    price: 39.0,
+    description:
+      "সুগন্ধি মসলা ও চালের স্তরে তৈরি স্বাদে ভরপুর খিচুরি, আপনার পছন্দের মাংস বা শাকসবজির সাথে পরিবেশিত।",
   },
   {
     name: "Chicken Khichuri",
     image: require("../../assets/images/icon.png"),
     available: false,
+    category: "খিচুরি",
+    price: 49.0,
+    description:
+      "সুগন্ধি মসলা ও চালের স্তরে তৈরি স্বাদে ভরপুর খিচুরি, আপনার পছন্দের মাংস বা শাকসবজির সাথে পরিবেশিত।",
   },
   {
     name: "Beef Khichuri",
     image: require("../../assets/images/icon.png"),
     available: true,
+    category: "কারি",
+    price: 69.0,
+    description:
+      "সুগন্ধি মসলা ও চালের স্তরে তৈরি স্বাদে ভরপুর বিরিয়ানি, আপনার পছন্দের মাংস বা শাকসবজির সাথে পরিবেশিত।",
   },
   {
     name: "Beef Biryani",
     image: require("../../assets/images/icon.png"),
     available: true,
+    category: "কারি",
+    price: 129.0,
+    description: "ফুল প্লেট বিরিয়ানি, সুগন্ধি চাল ও মসলার মিশেলে।",
   },
   {
     name: "Morog Polao",
     image: require("../../assets/images/icon.png"),
     available: false,
+    category: "কোম্বো",
+    price: 89.0,
+    description:
+      "সুগন্ধি মসলা ও চালের স্তরে তৈরি স্বাদে ভরপুর বিরিয়ানি, আপনার পছন্দের মাংস বা শাকসবজির সাথে পরিবেশিত।",
   },
   {
     name: "Plain Rice",
     image: require("../../assets/images/icon.png"),
     available: false,
+    category: "কোম্বো",
+    price: 29.0,
+    description:
+      "সুগন্ধি মসলা ও চালের স্তরে তৈরি স্বাদে ভরপুর বিরিয়ানি, আপনার পছন্দের মাংস বা শাকসবজির সাথে পরিবেশিত।",
   },
 ];
 
@@ -58,6 +90,8 @@ const AVAILABILITY_OPTIONS = [
   { key: "sold_out_today", label: "Sold Out Today" },
   { key: "out_of_stock", label: "Out of Stock" },
 ];
+
+const CATEGORIES = ["বিরিয়ানি", "খিচুরি", "কোম্বো", "কারি", "ড্রিঙ্কস"];
 
 function ChangeAvailabilityModal({
   visible,
@@ -182,6 +216,270 @@ function ChangeAvailabilityModal({
   );
 }
 
+function EditMenuItemModal({
+  visible,
+  onClose,
+  item,
+  onUpdate,
+  onDelete,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  item: any;
+  onUpdate: (item: any) => void;
+  onDelete: () => void;
+}) {
+  const [category, setCategory] = useState(item.category);
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const [name, setName] = useState(item.name);
+  const [price, setPrice] = useState(item.price.toString());
+  const [description, setDescription] = useState(item.description);
+  const [image] = useState(item.image); // static image
+  const [show, setShow] = useState(visible);
+  const [closing, setClosing] = useState(false);
+
+  React.useEffect(() => {
+    if (visible) {
+      setShow(true);
+      setClosing(false);
+    }
+  }, [visible]);
+
+  const handleClose = () => {
+    setClosing(true);
+    setTimeout(() => {
+      setShow(false);
+      setClosing(false);
+      onClose();
+    }, 400);
+  };
+
+  return (
+    <Modal visible={show} animationType="none" transparent>
+      <AnimatePresence>
+        {show && !closing && (
+          <MotiView
+            from={{ translateX: 400, opacity: 0 }}
+            animate={{ translateX: 0, opacity: 1 }}
+            exit={{ translateX: 400, opacity: 0 }}
+            transition={{ type: "timing", duration: 400 }}
+            style={{
+              flex: 1,
+              backgroundColor: "#fff",
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 200,
+            }}
+          >
+            <ScrollView
+              contentContainerStyle={{ padding: 22, paddingBottom: 32 }}
+              keyboardShouldPersistTaps="handled"
+            >
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "flex-start",
+                  marginBottom: 18,
+                }}
+              >
+                <TouchableOpacity
+                  onPress={handleClose}
+                  style={{ marginRight: 16 }}
+                >
+                  <ArrowLeft size={32} color="#222" />
+                </TouchableOpacity>
+                <Text
+                  style={{ fontWeight: "bold", fontSize: 22, color: "#111" }}
+                >
+                  Update Menu Item
+                </Text>
+              </View>
+              <Text
+                style={{ fontWeight: "bold", fontSize: 16, marginBottom: 8 }}
+              >
+                Select Category
+              </Text>
+              <TouchableOpacity
+                style={{
+                  borderWidth: 1.5,
+                  borderColor: "#D1D5DB",
+                  borderRadius: 12,
+                  padding: 14,
+                  marginBottom: 0,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+                onPress={() => setShowCategoryDropdown((v) => !v)}
+                activeOpacity={0.8}
+              >
+                <Text style={{ fontSize: 18 }}>{category}</Text>
+                <ChevronDown
+                  size={22}
+                  color="#888"
+                  style={{
+                    transform: [
+                      { rotate: showCategoryDropdown ? "180deg" : "0deg" },
+                    ],
+                  }}
+                />
+              </TouchableOpacity>
+              {showCategoryDropdown && (
+                <View
+                  style={{
+                    backgroundColor: "#F5F3F7",
+                    borderTopLeftRadius: 12,
+                    borderTopRightRadius: 12,
+                    borderBottomLeftRadius: 12,
+                    borderBottomRightRadius: 12,
+                    marginBottom: 18,
+                    borderWidth: 1.5,
+                    borderColor: "#D1D5DB",
+                    borderTopWidth: 0,
+                    maxHeight: 320,
+                    overflow: "hidden",
+                  }}
+                >
+                  {CATEGORIES.map((cat) => (
+                    <TouchableOpacity
+                      key={cat}
+                      onPress={() => {
+                        setCategory(cat);
+                        setShowCategoryDropdown(false);
+                      }}
+                      style={{
+                        paddingVertical: 16,
+                        paddingHorizontal: 18,
+                        backgroundColor:
+                          cat === category ? "#E5E1EB" : "#F5F3F7",
+                      }}
+                    >
+                      <Text style={{ fontSize: 18 }}>{cat}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+              {!showCategoryDropdown && <View style={{ marginBottom: 18 }} />}
+              <Text
+                style={{ fontWeight: "bold", fontSize: 16, marginBottom: 8 }}
+              >
+                Item Image
+              </Text>
+              <View style={{ marginBottom: 18 }}>
+                <Image
+                  source={image}
+                  style={{ width: 120, height: 120, borderRadius: 12 }}
+                />
+              </View>
+              <Text
+                style={{ fontWeight: "bold", fontSize: 16, marginBottom: 8 }}
+              >
+                Item Name
+              </Text>
+              <TextInput
+                value={name}
+                onChangeText={setName}
+                style={{
+                  borderWidth: 1.5,
+                  borderColor: "#D1D5DB",
+                  borderRadius: 12,
+                  padding: 14,
+                  fontSize: 18,
+                  marginBottom: 18,
+                  color: "#222",
+                }}
+              />
+              <Text
+                style={{ fontWeight: "bold", fontSize: 16, marginBottom: 8 }}
+              >
+                Base Price
+              </Text>
+              <TextInput
+                value={price}
+                onChangeText={setPrice}
+                keyboardType="decimal-pad"
+                style={{
+                  borderWidth: 1.5,
+                  borderColor: "#D1D5DB",
+                  borderRadius: 12,
+                  padding: 14,
+                  fontSize: 18,
+                  marginBottom: 18,
+                  color: "#222",
+                }}
+              />
+              <Text
+                style={{ fontWeight: "bold", fontSize: 16, marginBottom: 8 }}
+              >
+                Description
+              </Text>
+              <TextInput
+                value={description}
+                onChangeText={setDescription}
+                multiline
+                style={{
+                  borderWidth: 1.5,
+                  borderColor: "#D1D5DB",
+                  borderRadius: 12,
+                  padding: 14,
+                  fontSize: 17,
+                  minHeight: 80,
+                  color: "#222",
+                  marginBottom: 28,
+                }}
+              />
+              <TouchableOpacity
+                style={{
+                  backgroundColor: "#2563eb",
+                  borderRadius: 12,
+                  paddingVertical: 16,
+                  alignItems: "center",
+                  marginBottom: 16,
+                }}
+                onPress={() =>
+                  onUpdate({
+                    ...item,
+                    name,
+                    price: parseFloat(price),
+                    description,
+                    category,
+                    image,
+                  })
+                }
+              >
+                <Text
+                  style={{ color: "#fff", fontWeight: "bold", fontSize: 18 }}
+                >
+                  Update Item
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{
+                  backgroundColor: "#F43F5E",
+                  borderRadius: 12,
+                  paddingVertical: 16,
+                  alignItems: "center",
+                }}
+                onPress={onDelete}
+              >
+                <Text
+                  style={{ color: "#fff", fontWeight: "bold", fontSize: 18 }}
+                >
+                  Delete Item
+                </Text>
+              </TouchableOpacity>
+            </ScrollView>
+          </MotiView>
+        )}
+      </AnimatePresence>
+    </Modal>
+  );
+}
+
 export default function MenuCategoryModal({
   visible,
   category,
@@ -215,12 +513,10 @@ export default function MenuCategoryModal({
 
   const handleToggle = (idx: number) => {
     if (!items[idx].available) {
-      // If currently off, just turn on
       setItems((prev) =>
         prev.map((it, i) => (i === idx ? { ...it, available: true } : it))
       );
     } else {
-      // If currently on, show modal
       setAvailModalIdx(idx);
     }
   };
@@ -234,6 +530,16 @@ export default function MenuCategoryModal({
       );
       setAvailModalIdx(null);
     }
+  };
+
+  const handleUpdateItem = (updated: any) => {
+    setItems((prev) => prev.map((it, i) => (i === editIdx ? updated : it)));
+    setEditIdx(null);
+  };
+
+  const handleDeleteItem = () => {
+    setItems((prev) => prev.filter((_, i) => i !== editIdx));
+    setEditIdx(null);
   };
 
   return (
@@ -351,6 +657,15 @@ export default function MenuCategoryModal({
               onClose={() => setAvailModalIdx(null)}
               onChange={handleChangeAvailability}
             />
+            {editIdx !== null && (
+              <EditMenuItemModal
+                visible={editIdx !== null}
+                item={items[editIdx]}
+                onClose={() => setEditIdx(null)}
+                onUpdate={handleUpdateItem}
+                onDelete={handleDeleteItem}
+              />
+            )}
           </MotiView>
         )}
       </AnimatePresence>
