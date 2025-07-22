@@ -1,6 +1,5 @@
 import { useRealtimeOrders } from "@/hooks/useRealtimeOrders";
 import { useGetRestaurantQuery } from "@/redux/feature/restaurant/restaurantApi";
-import * as Updates from "expo-updates";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Image,
@@ -24,17 +23,18 @@ export default function OrdersSection() {
   const [showEmptyState, setShowEmptyState] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const { data: getRestaurants } = useGetRestaurantQuery({});
+  // Use refetch from both restaurant and orders
+  const { data: getRestaurants, refetch: refetchRestaurant } =
+    useGetRestaurantQuery({});
+  const restaurantName = getRestaurants?.results[0]?.name;
+  const restaurantId = getRestaurants?.results[0]?.id;
+  const { categorizedOrders, refetch: refetchOrders } =
+    useRealtimeOrders(restaurantId);
 
   // console.log(
   //   JSON.stringify(getRestaurants?.results[0]?.name, null, 2),
   //   "get-res name"
   // );
-
-  const restaurantName = getRestaurants?.results[0]?.name;
-  const restaurantId = getRestaurants?.results[0]?.id;
-
-  const { categorizedOrders } = useRealtimeOrders(restaurantId);
 
   // Helper to check if there are any orders
   const hasOrders =
@@ -81,13 +81,13 @@ export default function OrdersSection() {
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await Updates.reloadAsync();
+      await Promise.all([refetchRestaurant(), refetchOrders?.()]);
     } catch {
       // handle error silently
     } finally {
       setRefreshing(false);
     }
-  }, []);
+  }, [refetchRestaurant, refetchOrders]);
 
   const handleReadyForDelivery = () => {
     setReadyModalVisible(false);

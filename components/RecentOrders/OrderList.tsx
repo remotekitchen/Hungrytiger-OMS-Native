@@ -6,9 +6,16 @@ import { Order } from "./types";
 interface OrderListProps {
   orders: Order[];
   onOrderPress?: (order: Order) => void;
+  refreshing?: boolean;
+  onRefresh?: () => void;
 }
 
-export default function OrderList({ orders, onOrderPress }: OrderListProps) {
+export default function OrderList({
+  orders,
+  onOrderPress,
+  refreshing,
+  onRefresh,
+}: OrderListProps) {
   if (orders.length === 0) {
     return (
       <View className="flex-1 items-center justify-center">
@@ -32,6 +39,8 @@ export default function OrderList({ orders, onOrderPress }: OrderListProps) {
           <OrderItem order={item} />
         )
       }
+      refreshing={refreshing}
+      onRefresh={onRefresh}
     />
   );
 }

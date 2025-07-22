@@ -41,11 +41,13 @@ export default function RecentOrders() {
     setDateFilter,
     filter,
     setFilter,
+    refetch,
   } = useRecentOrders();
 
   const [search, setSearch] = useState("");
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const filteredOrders = orders.filter(
     (order: any) =>
@@ -56,6 +58,14 @@ export default function RecentOrders() {
   const handleOrderPress = (order: any) => {
     setSelectedOrder(order);
     setModalVisible(true);
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await refetch();
+    } catch {}
+    setRefreshing(false);
   };
 
   if (isLoading) {
@@ -98,7 +108,12 @@ export default function RecentOrders() {
           orderCounts={orderCounts}
         />
       </View>
-      <OrderList orders={filteredOrders} onOrderPress={handleOrderPress} />
+      <OrderList
+        orders={filteredOrders}
+        onOrderPress={handleOrderPress}
+        refreshing={refreshing}
+        onRefresh={onRefresh}
+      />
       <OrderDetailsModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}

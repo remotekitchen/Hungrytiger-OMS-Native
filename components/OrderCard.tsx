@@ -1,6 +1,6 @@
 import { Bike } from "lucide-react-native";
 import { MotiView } from "moti";
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Text, View } from "react-native";
 
 interface OrderItem {
@@ -62,6 +62,23 @@ export default function OrderCard({
       statusClass = "bg-pink-100 text-pink-600";
     }
 
+    // Dynamic prep time countdown
+    const acceptedTime = new Date(order.created_date).getTime();
+    const [now, setNow] = useState(Date.now());
+    const intervalRef = useRef<any>(null);
+    useEffect(() => {
+      setNow(Date.now());
+      intervalRef.current = setInterval(() => {
+        setNow(Date.now());
+      }, 60000);
+      return () => {
+        if (intervalRef.current) clearInterval(intervalRef.current);
+      };
+    }, []);
+    const elapsedMinutes = Math.floor((now - acceptedTime) / 60000);
+    const remaining = order.prep_time - elapsedMinutes;
+    const isLate = remaining < 0;
+
     return (
       <MotiView
         from={{ opacity: 0, scale: 0.95 }}
@@ -102,9 +119,17 @@ export default function OrderCard({
         {/* Right: Green Circle with Minutes (only for accepted, not ready) */}
         {!isReady && (
           <View className="ml-2">
-            <View className="w-12 h-12 rounded-full border-2 border-green-500 items-center justify-center bg-white">
-              <Text className="text-green-700 font-bold text-lg">
-                {order.prep_time}
+            <View
+              className={`w-12 h-12 rounded-full border-2 items-center justify-center bg-white ${
+                isLate ? "border-red-500 bg-red-100" : "border-green-500"
+              }`}
+            >
+              <Text
+                className={`font-bold text-lg ${
+                  isLate ? "text-red-600" : "text-green-700"
+                }`}
+              >
+                {remaining}
               </Text>
             </View>
           </View>

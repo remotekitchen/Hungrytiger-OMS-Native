@@ -37,6 +37,7 @@ export const useRecentOrders = () => {
     data: ordersData,
     error,
     isLoading,
+    refetch,
   } = useOrderHistoryQuery(queryParams, { skip: !queryParams.start_date });
 
   const filteredOrders = useMemo(() => {
@@ -80,5 +81,6 @@ export const useRecentOrders = () => {
     setDateFilter,
     filter,
     setFilter,
+    refetch,
   };
 };

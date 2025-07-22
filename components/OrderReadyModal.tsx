@@ -4,7 +4,7 @@ import {
 } from "@/redux/feature/order/orderApi";
 import { ArrowLeft, CheckCheck, Printer } from "lucide-react-native";
 import { MotiView } from "moti";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -59,7 +59,29 @@ export default function OrderReadyModal({
   onReadyForDelivery: () => void;
   restaurantName: string;
 }) {
-  const [mins, setMins] = useState(order.prep_time);
+  // Calculate the accepted time in ms
+  const acceptedTime = new Date(order.created_date).getTime();
+  const [now, setNow] = useState(Date.now());
+  const intervalRef = useRef<any>(null);
+
+  // Update every minute
+  useEffect(() => {
+    if (visible) {
+      setNow(Date.now()); // reset on open
+      intervalRef.current = setInterval(() => {
+        setNow(Date.now());
+      }, 60000); // update every minute
+    }
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [visible]);
+
+  // Calculate remaining minutes
+  const elapsedMinutes = Math.floor((now - acceptedTime) / 60000);
+  const remaining = order.prep_time - elapsedMinutes;
+  const isLate = remaining < 0;
+  const [mins] = useState(order.prep_time); // Always use the accepted prep_time, do not allow editing
   const [loading, setLoading] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [readyForPickup, { isLoading: isReady, isSuccess }] =
@@ -160,9 +182,9 @@ export default function OrderReadyModal({
                   </Text>
                 </View>
                 <Text className="font-bold text-2xl mb-1">#{order.id}</Text>
-                <Text className="text-gray-500 text-base mb-1">
+                {/* <Text className="text-gray-500 text-base mb-1">
                   {order.order_id}
-                </Text>
+                </Text> */}
                 <View className="flex-row items-center">
                   <Text className="text-pink-600 bg-pink-100 rounded-full px-3 py-1 text-xs font-bold overflow-hidden">
                     {order.status.toUpperCase()}
@@ -171,25 +193,41 @@ export default function OrderReadyModal({
               </View>
               {/* Right: Minutes Selector */}
               <View className="relative items-center justify-center ml-2 mr-5">
-                <View className="w-24 h-24 bg-gray-100 rounded-full border border-gray-200 flex-col items-center justify-center">
-                  <Text className="font-bold text-2xl text-black mt-4">
-                    {mins}
+                <View
+                  className={`w-24 h-24 rounded-full border flex-col items-center justify-center ${
+                    isLate
+                      ? "border-red-500 bg-red-100"
+                      : "border-gray-200 bg-gray-100"
+                  }`}
+                >
+                  <Text
+                    className={`font-bold text-2xl mt-4 ${
+                      isLate ? "text-red-600" : "text-black"
+                    }`}
+                  >
+                    {remaining}
                   </Text>
-                  <Text className="text-gray-500 text-xs mb-4">mins</Text>
+                  <Text
+                    className={`text-xs mb-4 ${
+                      isLate ? "text-red-600" : "text-gray-500"
+                    }`}
+                  >
+                    mins
+                  </Text>
                 </View>
-                {/* - Button */}
+                {/* - Button (disabled) */}
                 <TouchableOpacity
-                  onPress={() => setMins(Math.max(1, mins - 1))}
-                  className="absolute left-[-22px] top-[40%] -translate-y-1/2 w-11 h-11 bg-white rounded-full items-center justify-center shadow border border-gray-200"
-                  style={{ elevation: 3 }}
+                  disabled={true}
+                  style={{ opacity: 0.3 }}
+                  className="absolute left-[-22px] top-[50%] -translate-y-1/2 w-11 h-11 bg-white rounded-full items-center justify-center shadow border border-gray-200"
                 >
                   <Text className="text-2xl text-gray-700">-</Text>
                 </TouchableOpacity>
-                {/* + Button */}
+                {/* + Button (disabled) */}
                 <TouchableOpacity
-                  onPress={() => setMins(mins + 1)}
-                  className="absolute right-[-22px] top-[40%] -translate-y-1/2 w-11 h-11 bg-white rounded-full items-center justify-center shadow border border-gray-200"
-                  style={{ elevation: 3 }}
+                  disabled={true}
+                  style={{ opacity: 0.3 }}
+                  className="absolute right-[-22px] top-[50%] -translate-y-1/2 w-11 h-11 bg-white rounded-full items-center justify-center shadow border border-gray-200"
                 >
                   <Text className="text-2xl text-gray-700">+</Text>
                 </TouchableOpacity>

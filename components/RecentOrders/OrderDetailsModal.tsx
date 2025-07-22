@@ -1,3 +1,4 @@
+import { useGetRestaurantQuery } from "@/redux/feature/restaurant/restaurantApi";
 import { ArrowLeft, CheckCircle2, Printer, User } from "lucide-react-native";
 import { AnimatePresence, MotiView } from "moti";
 import React, { useEffect, useState } from "react";
@@ -50,7 +51,8 @@ export default function OrderDetailsModal({
 }) {
   const [show, setShow] = useState(visible);
   const [isExiting, setIsExiting] = useState(false);
-
+  const { data: getRestaurants } = useGetRestaurantQuery({});
+  const restaurantName = getRestaurants?.results[0]?.name;
   useEffect(() => {
     if (visible) setShow(true);
   }, [visible]);
@@ -152,7 +154,7 @@ export default function OrderDetailsModal({
                         className="text-base font-bold"
                         style={{ color: mainColor }}
                       >
-                        Tiger Eats
+                        {restaurantName ? restaurantName : "Tiger Eats"}
                       </Text>
                       <Text className="text-3xl font-extrabold text-black py-3">
                         #{order.id}
@@ -202,7 +204,7 @@ export default function OrderDetailsModal({
                         </Text>
                       </View>
                     ))}
-                  <Text className="text-pink-600 text-xs font-bold mt-2">
+                  <Text className="text-[#FFA726] text-xs font-bold mt-2">
                     PLEASE DO NOT PROVIDE CUTLERY
                   </Text>
                   {order.checkout_note ? (
@@ -234,7 +236,7 @@ export default function OrderDetailsModal({
                       <Text className="text-base text-black">
                         Discount/Voucher
                       </Text>
-                      <Text className="text-base text-pink-600">
+                      <Text className="text-base text-[#FFA726]">
                         - {formatCurrency(order.discount)}
                       </Text>
                     </View>
