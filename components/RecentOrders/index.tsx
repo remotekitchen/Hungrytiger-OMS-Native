@@ -68,6 +68,18 @@ export default function RecentOrders() {
     setRefreshing(false);
   };
 
+  // Calculate completed orders and total amount
+  const completedOrders = orders.filter(
+    (order: any) => order.status === "completed"
+  );
+  const completedCount = completedOrders.length;
+  const completedTotal = completedOrders.reduce(
+    (sum: number, order: any) => sum + (order.total || 0),
+    0
+  );
+  // Show exact amount with two decimals
+  const formatTotal = (amount: number) => amount.toFixed(2);
+
   if (isLoading) {
     return (
       <View className="flex-1 bg-white">
@@ -107,6 +119,20 @@ export default function RecentOrders() {
           setFilter={setFilter}
           orderCounts={orderCounts}
         />
+        {/* Completed summary row */}
+        <View className="flex-row items-center mt-4 mb-2">
+          <Text className="text-base font-semibold text-gray-700">
+            Completed{" "}
+          </Text>
+          <Text className="text-base font-extrabold text-blue-600">
+            {completedCount}
+          </Text>
+          <Text className="text-base font-semibold text-gray-700 ml-1"> (</Text>
+          <Text className="text-base font-extrabold text-green-600">
+            ৳{formatTotal(completedTotal)}
+          </Text>
+          <Text className="text-base font-semibold text-gray-700">)</Text>
+        </View>
       </View>
       <OrderList
         orders={filteredOrders}

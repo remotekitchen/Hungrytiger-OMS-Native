@@ -1,11 +1,5 @@
-import {
-  Circle,
-  Minus,
-  PauseCircle,
-  Plus,
-  Store,
-  X,
-} from "lucide-react-native";
+import { useGetRestaurantQuery } from "@/redux/feature/restaurant/restaurantApi";
+import { PauseCircle, Store, X } from "lucide-react-native";
 import { MotiView } from "moti";
 import React, { useEffect, useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
@@ -43,23 +37,28 @@ export default function StoreStatusModal({
   currentStatus,
 }: StoreStatusModalProps) {
   const [status, setStatus] = useState(currentStatus.status);
-  const [pauseType, setPauseType] = useState(currentStatus.pauseType);
-  const [hours, setHours] = useState(currentStatus.hours);
+  // Commented out for now: Pause type and hours logic
+  // const [pauseType, setPauseType] = useState(currentStatus.pauseType);
+  // const [hours, setHours] = useState(currentStatus.hours);
+
+  const { data: getRestaurants } = useGetRestaurantQuery({});
+  console.log(
+    JSON.stringify(getRestaurants?.results[0], null, 2),
+    "get-resssst"
+  );
 
   useEffect(() => {
     if (visible) {
       setStatus(currentStatus.status);
-      setPauseType(currentStatus.pauseType);
-      setHours(currentStatus.hours);
+      // setPauseType(currentStatus.pauseType);
+      // setHours(currentStatus.hours);
     }
   }, [visible, currentStatus]);
 
-  const hasChanged =
-    status !== currentStatus.status ||
-    pauseType !== currentStatus.pauseType ||
-    hours !== currentStatus.hours;
+  const hasChanged = status !== currentStatus.status;
+  // || pauseType !== currentStatus.pauseType || hours !== currentStatus.hours;
 
-  const pauseDisabled = status !== "pause";
+  // const pauseDisabled = status !== "pause";
 
   if (!visible) return null;
   return (
@@ -109,6 +108,7 @@ export default function StoreStatusModal({
             {/* No right-side circle for Pause */}
           </TouchableOpacity>
         </View>
+        {/*
         <View className="mb-4">
           <View className="flex-row flex-wrap gap-2 mb-2">
             {pauseOptions.slice(0, 2).map((opt) => (
@@ -130,7 +130,6 @@ export default function StoreStatusModal({
               </TouchableOpacity>
             ))}
           </View>
-          {/* Always show Certain Hours row, enable controls only if selected */}
           <View className="flex-row items-center gap-2 mb-2">
             <TouchableOpacity
               className="flex-row items-center"
@@ -147,7 +146,6 @@ export default function StoreStatusModal({
               )}
               <Text className="ml-2">Certain Hours</Text>
             </TouchableOpacity>
-            {/* Always show the increment/decrement UI, only enable if selected */}
             <View className="flex-row items-center ml-4">
               <TouchableOpacity
                 onPress={() => setHours(Math.max(0, hours - 1))}
@@ -193,10 +191,12 @@ export default function StoreStatusModal({
             </View>
           </View>
         </View>
+        */}
         <TouchableOpacity
           className="w-full bg-blue-600 py-4 rounded-xl items-center mt-2"
           onPress={() => {
-            onUpdate(status, pauseType, hours);
+            // Only pass status for now, pauseType and hours are not used
+            onUpdate(status, "", 0);
           }}
           disabled={!hasChanged}
           style={{ opacity: hasChanged ? 1 : 0.5 }}
