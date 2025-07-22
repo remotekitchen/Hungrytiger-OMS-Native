@@ -1,6 +1,13 @@
 import { AnimatePresence, MotiView } from "moti";
 import React, { useState } from "react";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  Platform,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import OpeningHoursDayRow from "./OpeningHoursDayRow";
 import OpeningHoursShiftRow from "./OpeningHoursShiftRow";
 import TimePickerModal from "./TimePickerModal";
@@ -10,6 +17,7 @@ export default function OpeningHoursEditView({
   setOpeningHours,
   onCancel,
   onSave,
+  isSaving,
 }: any) {
   const [expandedDays, setExpandedDays] = useState([]);
   const [localHours, setLocalHours] = useState(
@@ -61,9 +69,16 @@ export default function OpeningHoursEditView({
   const closePicker = () => setPicker(null);
   const onPickerOk = (hour, minute) => {
     if (!picker) return;
-    const value = `${hour.toString().padStart(2, "0")}:${minute
+    let fixedMinute = minute;
+    if (Platform.OS === "android") {
+      fixedMinute = minute - 6;
+      if (fixedMinute < 0) fixedMinute += 60;
+    }
+    console.log("DEBUG onPickerOk:", { hour, minute, fixedMinute });
+    const value = `${hour.toString().padStart(2, "0")}:${fixedMinute
       .toString()
       .padStart(2, "0")}`;
+    console.log("DEBUG value string:", value);
     handleShiftChange(picker.dayIdx, picker.shiftIdx, picker.field, value);
     closePicker();
   };
@@ -146,7 +161,7 @@ export default function OpeningHoursEditView({
       >
         <TouchableOpacity
           onPress={() => onSave(localHours)}
-          disabled={!hasChanged}
+          disabled={!hasChanged || isSaving}
           style={{
             width: "100%",
             backgroundColor: hasChanged ? "#E91E63" : "#F3F4F6",
@@ -154,18 +169,22 @@ export default function OpeningHoursEditView({
             paddingVertical: 18,
             alignItems: "center",
             marginBottom: 8,
-            opacity: hasChanged ? 1 : 1,
+            opacity: hasChanged && !isSaving ? 1 : 0.5,
           }}
         >
-          <Text
-            style={{
-              color: hasChanged ? "#fff" : "#888",
-              fontWeight: "bold",
-              fontSize: 22,
-            }}
-          >
-            Save
-          </Text>
+          {isSaving ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text
+              style={{
+                color: hasChanged ? "#fff" : "#888",
+                fontWeight: "bold",
+                fontSize: 22,
+              }}
+            >
+              Save
+            </Text>
+          )}
         </TouchableOpacity>
         <TouchableOpacity
           onPress={onCancel}
@@ -176,26 +195,24 @@ export default function OpeningHoursEditView({
           </Text>
         </TouchableOpacity>
       </View>
-      {picker && (
-        <TimePickerModal
-          visible={!!picker}
-          onCancel={closePicker}
-          onOk={onPickerOk}
-          initialHour={parseInt(
-            localHours[picker.dayIdx].shifts[picker.shiftIdx][
-              picker.field
-            ].split(":")[0],
-            10
-          )}
-          initialMinute={parseInt(
-            localHours[picker.dayIdx].shifts[picker.shiftIdx][
-              picker.field
-            ].split(":")[1],
-            10
-          )}
-          label={picker.field === "start" ? "STARTS AT" : "ENDS AT"}
-        />
-      )}
+      {picker &&
+        (() => {
+          const timeStr =
+            localHours[picker.dayIdx].shifts[picker.shiftIdx][picker.field];
+          const timeParts = timeStr.split(":");
+          const hour = parseInt(timeParts[0], 10);
+          const minute = parseInt(timeParts[1], 10);
+          return (
+            <TimePickerModal
+              visible={!!picker}
+              onCancel={closePicker}
+              onOk={onPickerOk}
+              initialHour={hour}
+              initialMinute={minute}
+              label={picker.field === "start" ? "STARTS AT" : "ENDS AT"}
+            />
+          );
+        })()}
     </View>
   );
 }

@@ -42,10 +42,10 @@ export default function StoreStatusModal({
   // const [hours, setHours] = useState(currentStatus.hours);
 
   const { data: getRestaurants } = useGetRestaurantQuery({});
-  console.log(
-    JSON.stringify(getRestaurants?.results[0], null, 2),
-    "get-resssst"
-  );
+  // console.log(
+  //   JSON.stringify(getRestaurants?.results[0]?.location_details[0], null, 2),
+  //   "get-resssst"
+  // );
 
   useEffect(() => {
     if (visible) {

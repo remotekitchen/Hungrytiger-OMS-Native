@@ -11,13 +11,15 @@ export default function TimePickerModal({
   label,
 }) {
   const [tempTime, setTempTime] = useState(
-    new Date(0, 0, 0, initialHour || 0, initialMinute || 0)
+    new Date(0, 0, 0, initialHour || 0, initialMinute || 0, 0, 0)
   );
   const [showIOS, setShowIOS] = useState(false);
 
   useEffect(() => {
     if (visible) {
-      setTempTime(new Date(0, 0, 0, initialHour || 0, initialMinute || 0));
+      setTempTime(
+        new Date(0, 0, 0, initialHour || 0, initialMinute || 0, 0, 0)
+      );
       if (Platform.OS === "ios") setShowIOS(true);
     } else {
       setShowIOS(false);
@@ -80,7 +82,17 @@ export default function TimePickerModal({
             {label}
           </Text>
           <DateTimePicker
-            value={tempTime}
+            value={
+              new Date(
+                0,
+                0,
+                0,
+                tempTime.getHours(),
+                tempTime.getMinutes(),
+                0,
+                0
+              )
+            }
             mode="time"
             is24Hour={true}
             display="spinner"

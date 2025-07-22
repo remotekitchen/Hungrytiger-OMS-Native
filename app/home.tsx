@@ -13,6 +13,11 @@ import RequestRider from "@/components/RequestRider";
 import SettingsPage from "@/components/SettingsPage";
 import Sidebar from "@/components/Sidebar";
 import WhatsNew from "@/components/WhatsNew";
+import {
+  useGetMenuOpeningHoursQuery,
+  useGetRestaurantQuery,
+} from "@/redux/feature/restaurant/restaurantApi";
+import { useEffect } from "react";
 import MenusSection from "../components/MenusSection";
 import OrdersSection from "../components/OrdersSection";
 import StoreStatusModal from "../components/StoreStatusModal";
@@ -76,6 +81,52 @@ export default function Home() {
       shifts: [{ start: "11:00", end: "21:00" }],
     },
   ]);
+
+  const { data: getRestaurants } = useGetRestaurantQuery({});
+
+  const restaurantId = getRestaurants?.results[0]?.id;
+  const locationId = getRestaurants?.results[0]?.location_details[0]?.id;
+
+  // console.log(
+  //   JSON.stringify(getRestaurants?.results[0]?.id, null, 2),
+  //   "get-resssst"
+  // );
+
+  const { data: menuOpeningHours } = useGetMenuOpeningHoursQuery(
+    {
+      restaurantId: restaurantId,
+      locationId: locationId,
+    },
+    { skip: !restaurantId || !locationId }
+  );
+
+  const menuId = menuOpeningHours?.results[0]?.id;
+
+  // console.log(
+  //   JSON.stringify(menuOpeningHours?.results[0]?.id, null, 2),
+  //   "menuOpeningHours.........."
+  // );
+
+  useEffect(() => {
+    if (menuOpeningHours?.results[0]?.opening_hours) {
+      const transformedHours = menuOpeningHours.results[0].opening_hours.map(
+        (item) => ({
+          day: item.day_index.charAt(0).toUpperCase() + item.day_index.slice(1),
+          enabled: !item.is_close,
+          shifts: item.opening_hour.map((shift) => ({
+            start: shift.start_time.slice(0, 5),
+            end: shift.end_time.slice(0, 5),
+          })),
+        })
+      );
+      setOpeningHours(transformedHours);
+    }
+  }, [menuOpeningHours]);
+
+  // console.log(
+  //   JSON.stringify(menuOpeningHours?.results[0]?.opening_hours, null, 2),
+  //   "menuOpeningHours"
+  // );
 
   // Compute label for header button
   let storeStatusLabel = "Open";
@@ -146,6 +197,7 @@ export default function Home() {
         onClose={() => setOpeningHoursModalVisible(false)}
         openingHours={openingHours}
         setOpeningHours={setOpeningHours}
+        menuId={menuId}
       />
     </View>
   );

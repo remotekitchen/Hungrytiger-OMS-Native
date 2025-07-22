@@ -2,6 +2,19 @@ import { Pencil } from "lucide-react-native";
 import React from "react";
 import { FlatList, Text, TouchableOpacity, View } from "react-native";
 
+function formatTime12h(timeStr) {
+  // timeStr: '08:00' or '19:50' or '20:55'
+  const [h, m] = timeStr.split(":").map(Number);
+  let hour = h % 12 === 0 ? 12 : h % 12;
+  let ampm = h < 12 ? "AM" : "PM";
+  // Add space before and after colon if not on the hour
+  if (m === 0) {
+    return `${hour} ${ampm}`;
+  } else {
+    return `${hour} : ${m.toString().padStart(2, "0")} ${ampm}`;
+  }
+}
+
 export default function OpeningHoursView({ openingHours, onEdit }) {
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
@@ -36,7 +49,7 @@ export default function OpeningHoursView({ openingHours, onEdit }) {
         >
           <Text
             style={{
-              color: "#E91E63",
+              color: "#FB923C",
               fontWeight: "bold",
               fontSize: 16,
               marginRight: 4,
@@ -44,7 +57,7 @@ export default function OpeningHoursView({ openingHours, onEdit }) {
           >
             Edit
           </Text>
-          <Pencil size={18} color="#E91E63" />
+          <Pencil size={18} color="#FB923C" />
         </TouchableOpacity>
       </View>
       <FlatList
@@ -65,7 +78,12 @@ export default function OpeningHoursView({ openingHours, onEdit }) {
             <Text style={{ color: "#888", fontSize: 16 }}>{item.day}</Text>
             <Text style={{ color: "#222", fontSize: 16 }}>
               {item.enabled && item.shifts.length > 0
-                ? item.shifts.map((s) => `${s.start} - ${s.end}`).join(", ")
+                ? item.shifts
+                    .map(
+                      (s) =>
+                        `${formatTime12h(s.start)} - ${formatTime12h(s.end)}`
+                    )
+                    .join(", ")
                 : "--"}
             </Text>
           </View>
