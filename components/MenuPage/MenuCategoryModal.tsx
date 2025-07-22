@@ -1,0 +1,359 @@
+import { ArrowLeft, Pencil } from "lucide-react-native";
+import { AnimatePresence, MotiView } from "moti";
+import React, { useState } from "react";
+import {
+  Image,
+  Modal,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+
+const mockMenuItems = [
+  {
+    name: "Chicken Biryani Half",
+    image: require("../../assets/images/icon.png"),
+    available: true,
+  },
+  {
+    name: "Chicken Biryani Full",
+    image: require("../../assets/images/icon.png"),
+    available: true,
+  },
+  {
+    name: "Egg Khichuri",
+    image: require("../../assets/images/icon.png"),
+    available: false,
+  },
+  {
+    name: "Chicken Khichuri",
+    image: require("../../assets/images/icon.png"),
+    available: false,
+  },
+  {
+    name: "Beef Khichuri",
+    image: require("../../assets/images/icon.png"),
+    available: true,
+  },
+  {
+    name: "Beef Biryani",
+    image: require("../../assets/images/icon.png"),
+    available: true,
+  },
+  {
+    name: "Morog Polao",
+    image: require("../../assets/images/icon.png"),
+    available: false,
+  },
+  {
+    name: "Plain Rice",
+    image: require("../../assets/images/icon.png"),
+    available: false,
+  },
+];
+
+const AVAILABILITY_OPTIONS = [
+  { key: "in_stock", label: "In Stock" },
+  { key: "sold_out_today", label: "Sold Out Today" },
+  { key: "out_of_stock", label: "Out of Stock" },
+];
+
+function ChangeAvailabilityModal({
+  visible,
+  onClose,
+  onChange,
+  current,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  onChange: (option: string) => void;
+  current: string;
+}) {
+  const [selected, setSelected] = useState(current);
+  return (
+    <Modal visible={visible} transparent animationType="fade">
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: "rgba(0,0,0,0.18)",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <MotiView
+          from={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.95, opacity: 0 }}
+          transition={{ type: "timing", duration: 300 }}
+          style={{
+            backgroundColor: "#F7F7FB",
+            borderRadius: 18,
+            width: 340,
+            padding: 22,
+            shadowColor: "#000",
+            shadowOpacity: 0.08,
+            shadowRadius: 8,
+            elevation: 6,
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: 18,
+            }}
+          >
+            <Text style={{ fontWeight: "bold", fontSize: 20, color: "#111" }}>
+              Change Availability
+            </Text>
+            <TouchableOpacity onPress={onClose}>
+              <View
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 16,
+                  backgroundColor: "#fff0f0",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Text
+                  style={{ fontSize: 22, color: "#F43F5E", fontWeight: "bold" }}
+                >
+                  ×
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+          {AVAILABILITY_OPTIONS.map((opt, idx) => (
+            <TouchableOpacity
+              key={opt.key}
+              onPress={() => setSelected(opt.key)}
+              style={{
+                borderWidth: 2,
+                borderColor: selected === opt.key ? "#2563eb" : "#E5E7EB",
+                borderRadius: 12,
+                paddingVertical: 18,
+                paddingHorizontal: 16,
+                marginBottom: 12,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                backgroundColor: "#fff",
+              }}
+            >
+              <Text style={{ fontSize: 17, color: "#222", fontWeight: "500" }}>
+                {opt.label}
+              </Text>
+              {selected === opt.key ? (
+                <Text style={{ color: "#2563eb", fontSize: 22 }}>✔️</Text>
+              ) : (
+                <View
+                  style={{
+                    width: 22,
+                    height: 22,
+                    borderRadius: 11,
+                    borderWidth: 2,
+                    borderColor: "#D1D5DB",
+                  }}
+                />
+              )}
+            </TouchableOpacity>
+          ))}
+          <TouchableOpacity
+            onPress={() => onChange(selected)}
+            style={{
+              backgroundColor: "#2196F3",
+              borderRadius: 12,
+              paddingVertical: 14,
+              alignItems: "center",
+              marginTop: 8,
+            }}
+          >
+            <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 18 }}>
+              Change
+            </Text>
+          </TouchableOpacity>
+        </MotiView>
+      </View>
+    </Modal>
+  );
+}
+
+export default function MenuCategoryModal({
+  visible,
+  category,
+  onClose,
+}: {
+  visible: boolean;
+  category: string | null;
+  onClose: () => void;
+}) {
+  const [show, setShow] = useState(visible);
+  const [closing, setClosing] = useState(false);
+  const [items, setItems] = useState(mockMenuItems);
+  const [editIdx, setEditIdx] = useState<number | null>(null);
+  const [availModalIdx, setAvailModalIdx] = useState<number | null>(null);
+
+  React.useEffect(() => {
+    if (visible) {
+      setShow(true);
+      setClosing(false);
+    }
+  }, [visible]);
+
+  const handleClose = () => {
+    setClosing(true);
+    setTimeout(() => {
+      setShow(false);
+      setClosing(false);
+      onClose();
+    }, 400);
+  };
+
+  const handleToggle = (idx: number) => {
+    if (!items[idx].available) {
+      // If currently off, just turn on
+      setItems((prev) =>
+        prev.map((it, i) => (i === idx ? { ...it, available: true } : it))
+      );
+    } else {
+      // If currently on, show modal
+      setAvailModalIdx(idx);
+    }
+  };
+
+  const handleChangeAvailability = (option: string) => {
+    if (availModalIdx !== null) {
+      setItems((prev) =>
+        prev.map((it, i) =>
+          i === availModalIdx ? { ...it, available: option === "in_stock" } : it
+        )
+      );
+      setAvailModalIdx(null);
+    }
+  };
+
+  return (
+    <Modal visible={show} animationType="none" transparent>
+      <AnimatePresence>
+        {show && !closing && (
+          <MotiView
+            from={{ translateX: 400, opacity: 0 }}
+            animate={{ translateX: 0, opacity: 1 }}
+            exit={{ translateX: 400, opacity: 0 }}
+            transition={{ type: "timing", duration: 400 }}
+            style={{
+              flex: 1,
+              backgroundColor: "#fff",
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 100,
+            }}
+          >
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                padding: 18,
+                paddingBottom: 8,
+              }}
+            >
+              <TouchableOpacity
+                onPress={handleClose}
+                style={{ marginRight: 12 }}
+              >
+                <ArrowLeft size={28} color="#222" />
+              </TouchableOpacity>
+              <Text style={{ fontWeight: "bold", fontSize: 20, color: "#111" }}>
+                {category}
+              </Text>
+            </View>
+            <View style={{ paddingHorizontal: 8, marginTop: 4 }}>
+              {items.map((item, idx) => (
+                <MotiView
+                  key={item.name}
+                  from={{ opacity: 0, translateY: 20 }}
+                  animate={{ opacity: 1, translateY: 0 }}
+                  transition={{
+                    type: "timing",
+                    duration: 400,
+                    delay: idx * 60,
+                  }}
+                  style={{
+                    backgroundColor: "#F7F7F7",
+                    borderRadius: 14,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    marginBottom: 14,
+                    padding: 10,
+                    shadowColor: "#000",
+                    shadowOpacity: 0.03,
+                    shadowRadius: 2,
+                    elevation: 1,
+                  }}
+                >
+                  <Image
+                    source={item.image}
+                    style={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: 8,
+                      marginRight: 12,
+                    }}
+                    resizeMode="cover"
+                  />
+                  <Text
+                    style={{
+                      flex: 1,
+                      fontWeight: "600",
+                      fontSize: 16,
+                      color: "#222",
+                    }}
+                  >
+                    {item.name}
+                  </Text>
+                  <Switch
+                    value={item.available}
+                    trackColor={{ false: "#D1D5DB", true: "#34D399" }}
+                    thumbColor={item.available ? "#10B981" : "#ccc"}
+                    style={{ marginRight: 10 }}
+                    onValueChange={() => handleToggle(idx)}
+                  />
+                  <TouchableOpacity
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: 16,
+                      backgroundColor: "#E5E7EB",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                    onPress={() => setEditIdx(idx)}
+                  >
+                    <Pencil size={18} color="#888" />
+                  </TouchableOpacity>
+                </MotiView>
+              ))}
+            </View>
+            <ChangeAvailabilityModal
+              visible={availModalIdx !== null}
+              current={
+                items[availModalIdx || 0]?.available
+                  ? "in_stock"
+                  : "out_of_stock"
+              }
+              onClose={() => setAvailModalIdx(null)}
+              onChange={handleChangeAvailability}
+            />
+          </MotiView>
+        )}
+      </AnimatePresence>
+    </Modal>
+  );
+}
