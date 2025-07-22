@@ -1,8 +1,13 @@
-import { useGetRestaurantQuery } from "@/redux/feature/restaurant/restaurantApi";
+import {
+  useGetRestaurantQuery,
+  useGetStoreStatusQuery,
+  useStorePauseUnpauseMutation,
+} from "@/redux/feature/restaurant/restaurantApi";
 import { PauseCircle, Store, X } from "lucide-react-native";
 import { MotiView } from "moti";
 import React, { useEffect, useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
+import Toast from "react-native-toast-message";
 
 interface StoreStatusModalProps {
   visible: boolean;
@@ -36,26 +41,31 @@ export default function StoreStatusModal({
   onUpdate,
   currentStatus,
 }: StoreStatusModalProps) {
-  const [status, setStatus] = useState(currentStatus.status);
   // Commented out for now: Pause type and hours logic
   // const [pauseType, setPauseType] = useState(currentStatus.pauseType);
   // const [hours, setHours] = useState(currentStatus.hours);
 
   const { data: getRestaurants } = useGetRestaurantQuery({});
-  // console.log(
-  //   JSON.stringify(getRestaurants?.results[0]?.location_details[0], null, 2),
-  //   "get-resssst"
-  // );
+
+  const locationId = getRestaurants?.results[0]?.location_details[0]?.id;
+
+  const { data: getStoreStatus } = useGetStoreStatusQuery({ locationId });
+  const storeStatus = getStoreStatus?.is_location_closed;
+
+  const [status, setStatus] = useState(storeStatus === true ? "pause" : "open");
+
+  const [storePauseUnpause, { isLoading: isUpdating }] =
+    useStorePauseUnpauseMutation();
 
   useEffect(() => {
     if (visible) {
-      setStatus(currentStatus.status);
+      setStatus(storeStatus === true ? "pause" : "open");
       // setPauseType(currentStatus.pauseType);
       // setHours(currentStatus.hours);
     }
-  }, [visible, currentStatus]);
+  }, [visible, storeStatus]);
 
-  const hasChanged = status !== currentStatus.status;
+  const hasChanged = status !== (storeStatus === true ? "pause" : "open");
   // || pauseType !== currentStatus.pauseType || hours !== currentStatus.hours;
 
   // const pauseDisabled = status !== "pause";
@@ -194,14 +204,36 @@ export default function StoreStatusModal({
         */}
         <TouchableOpacity
           className="w-full bg-blue-600 py-4 rounded-xl items-center mt-2"
-          onPress={() => {
-            // Only pass status for now, pauseType and hours are not used
-            onUpdate(status, "", 0);
+          onPress={async () => {
+            try {
+              await storePauseUnpause({
+                locationId,
+                status: status === "pause", // true for pause, false for open
+              }).unwrap();
+              Toast.show({
+                type: "success",
+                text1:
+                  status === "pause"
+                    ? "Store paused successfully!"
+                    : "Store opened successfully!",
+              });
+              onUpdate(status, "", 0);
+              onClose();
+            } catch (err) {
+              Toast.show({
+                type: "error",
+                text1: "Failed to update store status.",
+              });
+            }
           }}
-          disabled={!hasChanged}
-          style={{ opacity: hasChanged ? 1 : 0.5 }}
+          disabled={!hasChanged || isUpdating}
+          style={{ opacity: hasChanged && !isUpdating ? 1 : 0.5 }}
         >
-          <Text className="text-white text-lg font-bold">Update Status</Text>
+          {isUpdating ? (
+            <Text className="text-white text-lg font-bold">Updating...</Text>
+          ) : (
+            <Text className="text-white text-lg font-bold">Update Status</Text>
+          )}
         </TouchableOpacity>
       </MotiView>
     </View>

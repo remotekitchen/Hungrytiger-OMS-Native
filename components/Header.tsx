@@ -21,7 +21,7 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   return (
     <View className="flex-row items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
-      <TouchableOpacity onPress={onMenuPress} className="p-2 static z-50">
+      <TouchableOpacity onPress={onMenuPress} className="p-2">
         <Menu size={28} color="#222" />
       </TouchableOpacity>
       {/* <Text className="text-xl font-bold flex-1 text-center -ml-8">Orders</Text> */}

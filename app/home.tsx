@@ -16,6 +16,7 @@ import WhatsNew from "@/components/WhatsNew";
 import {
   useGetMenuOpeningHoursQuery,
   useGetRestaurantQuery,
+  useGetStoreStatusQuery,
 } from "@/redux/feature/restaurant/restaurantApi";
 import { useEffect } from "react";
 import MenusSection from "../components/MenusSection";
@@ -87,6 +88,12 @@ export default function Home() {
   const restaurantId = getRestaurants?.results[0]?.id;
   const locationId = getRestaurants?.results[0]?.location_details[0]?.id;
 
+  const { data: getStoreStatus } = useGetStoreStatusQuery(
+    { locationId },
+    { skip: !locationId }
+  );
+  const storeStatusApi = getStoreStatus?.is_location_closed;
+
   // console.log(
   //   JSON.stringify(getRestaurants?.results[0]?.id, null, 2),
   //   "get-resssst"
@@ -103,8 +110,8 @@ export default function Home() {
   const menuId = menuOpeningHours?.results[0]?.id;
 
   // console.log(
-  //   JSON.stringify(menuOpeningHours?.results[0]?.id, null, 2),
-  //   "menuOpeningHours.........."
+  //   JSON.stringify(menuOpeningHours?.results[0]?.opening_hours, null, 2),
+  //   "menuOpeningHours"
   // );
 
   useEffect(() => {
@@ -129,14 +136,14 @@ export default function Home() {
   // );
 
   // Compute label for header button
-  let storeStatusLabel = "Open";
-  if (storeStatus.status === "pause") {
-    if (storeStatus.pauseType === "forever") storeStatusLabel = "Paused";
-    else if (storeStatus.pauseType === "wholeDay") storeStatusLabel = "Paused";
-    else if (storeStatus.pauseType === "hours")
-      storeStatusLabel = `Paused (${storeStatus.hours}h)`;
-    else storeStatusLabel = "Paused";
-  }
+  let storeStatusLabel = storeStatusApi ? "Paused" : "Open";
+  // if (storeStatus.status === "pause") {
+  //   if (storeStatus.pauseType === "forever") storeStatusLabel = "Paused";
+  //   else if (storeStatus.pauseType === "wholeDay") storeStatusLabel = "Paused";
+  //   else if (storeStatus.pauseType === "hours")
+  //     storeStatusLabel = `Paused (${storeStatus.hours}h)`;
+  //   else storeStatusLabel = "Paused";
+  // }
 
   let SectionComponent = null;
   if (activeSection === "orders") SectionComponent = <OrdersSection />;
@@ -165,10 +172,10 @@ export default function Home() {
       >
         <Header
           onMenuPress={() => setSidebarOpen(true)}
-          onQrPress={() => alert("QR Pressed")}
+          onQrPress={() => {}}
           onOpenPress={() => setStoreStatusModalVisible(true)}
           storeStatusLabel={storeStatusLabel}
-          isPaused={storeStatus.status === "pause"}
+          isPaused={!!storeStatusApi}
           onStoreIconPress={() => setOpeningHoursModalVisible(true)}
         />
       </View>

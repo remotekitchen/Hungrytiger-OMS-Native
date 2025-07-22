@@ -17,6 +17,13 @@ export const restaurantApi = apiSlice.injectEndpoints({
       }),
       providesTags: ["RESTAURANT"],
     }),
+    getStoreStatus: builder.query({
+      query: ({ locationId }) => ({
+        url: `api/food/v1/location/item/?id=${locationId}`,
+        method: "GET",
+      }),
+      providesTags: ["RESTAURANT"],
+    }),
     storePauseUnpause: builder.mutation({
       query: ({ locationId, status }) => ({
         url: `api/food/v1/location/item/?id=${locationId}`,
@@ -45,4 +52,5 @@ export const {
   useStorePauseUnpauseMutation,
   useGetMenuOpeningHoursQuery,
   useUpdateMenuOpeningHoursMutation,
+  useGetStoreStatusQuery,
 } = restaurantApi;
