@@ -30,6 +30,6 @@ export const apiSlice = createApi({
       return headers;
     },
   }),
-  tagTypes: ["HOTEL", "ACCOUNT", "RESTAURANT", "ORDER"],
+  tagTypes: ["HOTEL", "ACCOUNT", "RESTAURANT", "ORDER", "MENU"],
   endpoints: () => ({}),
 });

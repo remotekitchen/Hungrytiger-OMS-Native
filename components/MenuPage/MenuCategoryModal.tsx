@@ -5,6 +5,7 @@ import {
   Image,
   Modal,
   ScrollView,
+  StyleSheet,
   Switch,
   Text,
   TextInput,
@@ -12,86 +13,11 @@ import {
   View,
 } from "react-native";
 
-const mockMenuItems = [
-  {
-    name: "Chicken Biryani Half",
-    image: require("../../assets/images/icon.png"),
-    available: true,
-    category: "বিরিয়ানি",
-    price: 79.0,
-    description:
-      "সুগন্ধি মসলা ও চালের স্তরে তৈরি স্বাদে ভরপুর বিরিয়ানি, আপনার পছন্দের মাংস বা শাকসবজির সাথে পরিবেশিত।",
-  },
-  {
-    name: "Chicken Biryani Full",
-    image: require("../../assets/images/icon.png"),
-    available: true,
-    category: "বিরিয়ানি",
-    price: 149.0,
-    description: "ফুল প্লেট বিরিয়ানি, সুগন্ধি চাল ও মসলার মিশেলে।",
-  },
-  {
-    name: "Egg Khichuri",
-    image: require("../../assets/images/icon.png"),
-    available: false,
-    category: "খিচুরি",
-    price: 39.0,
-    description:
-      "সুগন্ধি মসলা ও চালের স্তরে তৈরি স্বাদে ভরপুর খিচুরি, আপনার পছন্দের মাংস বা শাকসবজির সাথে পরিবেশিত।",
-  },
-  {
-    name: "Chicken Khichuri",
-    image: require("../../assets/images/icon.png"),
-    available: false,
-    category: "খিচুরি",
-    price: 49.0,
-    description:
-      "সুগন্ধি মসলা ও চালের স্তরে তৈরি স্বাদে ভরপুর খিচুরি, আপনার পছন্দের মাংস বা শাকসবজির সাথে পরিবেশিত।",
-  },
-  {
-    name: "Beef Khichuri",
-    image: require("../../assets/images/icon.png"),
-    available: true,
-    category: "কারি",
-    price: 69.0,
-    description:
-      "সুগন্ধি মসলা ও চালের স্তরে তৈরি স্বাদে ভরপুর বিরিয়ানি, আপনার পছন্দের মাংস বা শাকসবজির সাথে পরিবেশিত।",
-  },
-  {
-    name: "Beef Biryani",
-    image: require("../../assets/images/icon.png"),
-    available: true,
-    category: "কারি",
-    price: 129.0,
-    description: "ফুল প্লেট বিরিয়ানি, সুগন্ধি চাল ও মসলার মিশেলে।",
-  },
-  {
-    name: "Morog Polao",
-    image: require("../../assets/images/icon.png"),
-    available: false,
-    category: "কোম্বো",
-    price: 89.0,
-    description:
-      "সুগন্ধি মসলা ও চালের স্তরে তৈরি স্বাদে ভরপুর বিরিয়ানি, আপনার পছন্দের মাংস বা শাকসবজির সাথে পরিবেশিত।",
-  },
-  {
-    name: "Plain Rice",
-    image: require("../../assets/images/icon.png"),
-    available: false,
-    category: "কোম্বো",
-    price: 29.0,
-    description:
-      "সুগন্ধি মসলা ও চালের স্তরে তৈরি স্বাদে ভরপুর বিরিয়ানি, আপনার পছন্দের মাংস বা শাকসবজির সাথে পরিবেশিত।",
-  },
-];
-
 const AVAILABILITY_OPTIONS = [
   { key: "in_stock", label: "In Stock" },
   { key: "sold_out_today", label: "Sold Out Today" },
   { key: "out_of_stock", label: "Out of Stock" },
 ];
-
-const CATEGORIES = ["বিরিয়ানি", "খিচুরি", "কোম্বো", "কারি", "ড্রিঙ্কস"];
 
 function ChangeAvailabilityModal({
   visible,
@@ -222,19 +148,32 @@ function EditMenuItemModal({
   item,
   onUpdate,
   onDelete,
+  categories,
 }: {
   visible: boolean;
   onClose: () => void;
   item: any;
   onUpdate: (item: any) => void;
   onDelete: () => void;
+  categories: any[];
 }) {
-  const [category, setCategory] = useState(item.category);
+  // Fallbacks for missing fields
+  const defaultCategory =
+    Array.isArray(item.category) && item.category.length > 0
+      ? item.category[0]
+      : item.category || "";
+  const [category, setCategory] = useState(defaultCategory);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
-  const [name, setName] = useState(item.name);
-  const [price, setPrice] = useState(item.price.toString());
-  const [description, setDescription] = useState(item.description);
-  const [image] = useState(item.image); // static image
+  const [name, setName] = useState(item.name || "");
+  const [price, setPrice] = useState(item.price ? item.price.toString() : "0");
+  const [description, setDescription] = useState(item.description || "");
+  const [image] = useState(
+    item.original_image && item.original_image.local_url
+      ? { uri: item.original_image.local_url }
+      : item.image_url
+      ? { uri: item.image_url }
+      : require("../../assets/images/main_icon_300x300.png")
+  );
   const [show, setShow] = useState(visible);
   const [closing, setClosing] = useState(false);
 
@@ -344,21 +283,21 @@ function EditMenuItemModal({
                     overflow: "hidden",
                   }}
                 >
-                  {CATEGORIES.map((cat) => (
+                  {categories.map((cat) => (
                     <TouchableOpacity
-                      key={cat}
+                      key={cat.id}
                       onPress={() => {
-                        setCategory(cat);
+                        setCategory(cat.name);
                         setShowCategoryDropdown(false);
                       }}
                       style={{
                         paddingVertical: 16,
                         paddingHorizontal: 18,
                         backgroundColor:
-                          cat === category ? "#E5E1EB" : "#F5F3F7",
+                          cat.id === item.category_id ? "#E5E1EB" : "#F5F3F7",
                       }}
                     >
-                      <Text style={{ fontSize: 18 }}>{cat}</Text>
+                      <Text style={{ fontSize: 18 }}>{cat.name}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -446,7 +385,7 @@ function EditMenuItemModal({
                     name,
                     price: parseFloat(price),
                     description,
-                    category,
+                    category: category, // Use the selected category
                     image,
                   })
                 }
@@ -484,16 +423,24 @@ export default function MenuCategoryModal({
   visible,
   category,
   onClose,
+  items = [], // new prop: all items
+  categoryId = null, // new prop: selected category id
+  categories = [], // new prop: all categories
 }: {
   visible: boolean;
   category: string | null;
   onClose: () => void;
+  items?: any[];
+  categoryId?: number | null;
+  categories?: any[]; // Add categories prop
 }) {
   const [show, setShow] = useState(visible);
   const [closing, setClosing] = useState(false);
-  const [items, setItems] = useState(mockMenuItems);
+  // Remove local items state, use filteredItems instead
+  // const [items, setItems] = useState(mockMenuItems);
   const [editIdx, setEditIdx] = useState<number | null>(null);
   const [availModalIdx, setAvailModalIdx] = useState<number | null>(null);
+  const [fullScreenImage, setFullScreenImage] = useState<string | null>(null);
 
   React.useEffect(() => {
     if (visible) {
@@ -511,35 +458,59 @@ export default function MenuCategoryModal({
     }, 400);
   };
 
+  // Filter items by categoryId
+  const filteredItems =
+    Array.isArray(items) && categoryId != null
+      ? items.filter(
+          (item) =>
+            Array.isArray(item.category) && item.category.includes(categoryId)
+        )
+      : [];
+
+  // For edit and availability modals, use filteredItems
   const handleToggle = (idx: number) => {
-    if (!items[idx].available) {
-      setItems((prev) =>
-        prev.map((it, i) => (i === idx ? { ...it, available: true } : it))
-      );
-    } else {
-      setAvailModalIdx(idx);
-    }
+    // This would need to update the parent state if you want to persist changes
+    // For now, do nothing or show a message
   };
 
   const handleChangeAvailability = (option: string) => {
     if (availModalIdx !== null) {
-      setItems((prev) =>
-        prev.map((it, i) =>
-          i === availModalIdx ? { ...it, available: option === "in_stock" } : it
-        )
-      );
+      // This would need to update the parent state if you want to persist changes
+      // For now, do nothing or show a message
       setAvailModalIdx(null);
     }
   };
 
   const handleUpdateItem = (updated: any) => {
-    setItems((prev) => prev.map((it, i) => (i === editIdx ? updated : it)));
+    // This would need to update the parent state if you want to persist changes
+    // For now, do nothing or show a message
     setEditIdx(null);
   };
 
   const handleDeleteItem = () => {
-    setItems((prev) => prev.filter((_, i) => i !== editIdx));
+    // This would need to update the parent state if you want to persist changes
+    // For now, do nothing or show a message
     setEditIdx(null);
+  };
+
+  // Determine image source
+  const getImageSource = (item: any) => {
+    if (item.original_image && item.original_image.local_url) {
+      return { uri: item.original_image.local_url };
+    } else if (item.image_url) {
+      return { uri: item.image_url };
+    } else {
+      return require("../../assets/images/main_icon_300x300.png");
+    }
+  };
+
+  // Get status indicators
+  const getStatusIndicators = () => {
+    return [
+      { color: "#34D399", text: "Available" },
+      { color: "#FCD34D", text: "Unavailable Today" },
+      { color: "#D1D5DB", text: "Out of Stock" },
+    ];
   };
 
   return (
@@ -580,79 +551,139 @@ export default function MenuCategoryModal({
                 {category}
               </Text>
             </View>
-            <View style={{ paddingHorizontal: 8, marginTop: 4 }}>
-              {items.map((item, idx) => (
-                <MotiView
-                  key={item.name}
-                  from={{ opacity: 0, translateY: 20 }}
-                  animate={{ opacity: 1, translateY: 0 }}
-                  transition={{
-                    type: "timing",
-                    duration: 400,
-                    delay: idx * 60,
-                  }}
-                  style={{
-                    backgroundColor: "#F7F7F7",
-                    borderRadius: 14,
-                    flexDirection: "row",
-                    alignItems: "center",
-                    marginBottom: 14,
-                    padding: 10,
-                    shadowColor: "#000",
-                    shadowOpacity: 0.03,
-                    shadowRadius: 2,
-                    elevation: 1,
-                  }}
-                >
-                  <Image
-                    source={item.image}
+
+            {/* Status Indicators */}
+            <View style={{ paddingHorizontal: 18, paddingBottom: 12 }}>
+              <View
+                style={{ flexDirection: "row", alignItems: "center", gap: 16 }}
+              >
+                {getStatusIndicators().map((indicator, index) => (
+                  <View
+                    key={index}
                     style={{
-                      width: 48,
-                      height: 48,
-                      borderRadius: 8,
-                      marginRight: 12,
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 6,
                     }}
-                    resizeMode="cover"
-                  />
+                  >
+                    <View
+                      style={{
+                        width: 12,
+                        height: 12,
+                        borderRadius: 6,
+                        backgroundColor: indicator.color,
+                      }}
+                    />
+                    <Text style={{ fontSize: 12, color: "#666" }}>
+                      {indicator.text}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+
+            <ScrollView style={{ flex: 1 }}>
+              <View style={{ paddingHorizontal: 8, marginTop: 4 }}>
+                {filteredItems.length === 0 ? (
                   <Text
                     style={{
-                      flex: 1,
-                      fontWeight: "600",
-                      fontSize: 16,
-                      color: "#222",
+                      color: "#888",
+                      textAlign: "center",
+                      marginTop: 32,
                     }}
                   >
-                    {item.name}
+                    No items in this category.
                   </Text>
-                  <Switch
-                    value={item.available}
-                    trackColor={{ false: "#D1D5DB", true: "#34D399" }}
-                    thumbColor={item.available ? "#10B981" : "#ccc"}
-                    style={{ marginRight: 10 }}
-                    onValueChange={() => handleToggle(idx)}
-                  />
-                  <TouchableOpacity
-                    style={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: 16,
-                      backgroundColor: "#E5E7EB",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                    onPress={() => setEditIdx(idx)}
-                  >
-                    <Pencil size={18} color="#888" />
-                  </TouchableOpacity>
-                </MotiView>
-              ))}
-            </View>
+                ) : (
+                  filteredItems.map((item, idx) => (
+                    <MotiView
+                      key={item.id || item.name}
+                      from={{ opacity: 0, translateY: 20 }}
+                      animate={{ opacity: 1, translateY: 0 }}
+                      transition={{
+                        type: "timing",
+                        duration: 400,
+                        delay: idx * 60,
+                      }}
+                      style={{
+                        backgroundColor: "#F7F7F7",
+                        borderRadius: 14,
+                        flexDirection: "row",
+                        alignItems: "center",
+                        marginBottom: 14,
+                        padding: 10,
+                        shadowColor: "#000",
+                        shadowOpacity: 0.03,
+                        shadowRadius: 2,
+                        elevation: 1,
+                      }}
+                    >
+                      <TouchableOpacity
+                        onPress={() => {
+                          const src = getImageSource(item);
+                          if (typeof src === "object" && src.uri)
+                            setFullScreenImage(src.uri);
+                        }}
+                      >
+                        <Image
+                          source={getImageSource(item)}
+                          style={{
+                            width: 48,
+                            height: 48,
+                            borderRadius: 8,
+                            marginRight: 12,
+                          }}
+                          resizeMode="cover"
+                        />
+                      </TouchableOpacity>
+                      <Text
+                        style={{
+                          flex: 1,
+                          fontWeight: "600",
+                          fontSize: 16,
+                          color: "#222",
+                        }}
+                      >
+                        {item.name}
+                      </Text>
+                      <Switch
+                        value={item.is_available && item.is_available_today}
+                        trackColor={{
+                          false: item.is_available ? "#FCD34D" : "#D1D5DB",
+                          true: "#34D399",
+                        }}
+                        thumbColor={
+                          item.is_available && item.is_available_today
+                            ? "#10B981"
+                            : "#ccc"
+                        }
+                        style={{ marginRight: 10 }}
+                        onValueChange={() => setAvailModalIdx(idx)}
+                      />
+                      <TouchableOpacity
+                        style={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: 16,
+                          backgroundColor: "#E5E7EB",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                        onPress={() => setEditIdx(idx)}
+                      >
+                        <Pencil size={18} color="#888" />
+                      </TouchableOpacity>
+                    </MotiView>
+                  ))
+                )}
+              </View>
+            </ScrollView>
             <ChangeAvailabilityModal
               visible={availModalIdx !== null}
               current={
-                items[availModalIdx || 0]?.available
-                  ? "in_stock"
-                  : "out_of_stock"
+                // This would need to update the parent state if you want to persist changes
+                // For now, do nothing or show a message
+                "out_of_stock"
               }
               onClose={() => setAvailModalIdx(null)}
               onChange={handleChangeAvailability}
@@ -660,15 +691,45 @@ export default function MenuCategoryModal({
             {editIdx !== null && (
               <EditMenuItemModal
                 visible={editIdx !== null}
-                item={items[editIdx]}
+                item={filteredItems[editIdx]}
                 onClose={() => setEditIdx(null)}
                 onUpdate={handleUpdateItem}
                 onDelete={handleDeleteItem}
+                categories={categories} // Pass categories prop
               />
             )}
           </MotiView>
         )}
       </AnimatePresence>
+      {/* Full screen image modal */}
+      {fullScreenImage && (
+        <Modal visible={true} transparent animationType="fade">
+          <TouchableOpacity
+            style={styles.fullScreenOverlay}
+            activeOpacity={1}
+            onPress={() => setFullScreenImage(null)}
+          >
+            <Image
+              source={{ uri: fullScreenImage }}
+              style={styles.fullScreenImage}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+        </Modal>
+      )}
     </Modal>
   );
 }
+
+const styles = StyleSheet.create({
+  fullScreenOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.95)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  fullScreenImage: {
+    width: "100%",
+    height: "100%",
+  },
+});
