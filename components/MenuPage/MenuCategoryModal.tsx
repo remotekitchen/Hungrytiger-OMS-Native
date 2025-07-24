@@ -166,7 +166,6 @@ export default function MenuCategoryModal({
                 item={filteredItems[editIdx]}
                 onClose={() => setEditIdx(null)}
                 onUpdate={handleUpdateItem}
-                onDelete={handleDeleteItem}
                 categories={categories}
               />
             )}

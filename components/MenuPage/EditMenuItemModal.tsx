@@ -1,6 +1,6 @@
 import { ArrowLeft, ChevronDown } from "lucide-react-native";
 import { AnimatePresence, MotiView } from "moti";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Image,
   Modal,
@@ -18,7 +18,6 @@ interface EditMenuItemModalProps {
   onClose: () => void;
   item: MenuItem;
   onUpdate: (item: MenuItem) => void;
-  onDelete: () => void;
   categories: Category[];
 }
 
@@ -27,18 +26,34 @@ export default function EditMenuItemModal({
   onClose,
   item,
   onUpdate,
-  onDelete,
   categories,
 }: EditMenuItemModalProps) {
-  // Fallbacks for missing fields
-  const defaultCategory =
-    Array.isArray(item.category) && item.category.length > 0
-      ? item.category[0]
-      : item.category || "";
-  const [category, setCategory] = useState(defaultCategory);
+  // Find the current category name based on category_id
+  const getCurrentCategoryName = () => {
+    // Check if item has category_names (string) first
+    if (item.category_names) {
+      return item.category_names;
+    }
+
+    // Fallback to category array if category_names is not available
+    if (Array.isArray(item.category) && item.category.length > 0) {
+      // Find the category by ID in the categories array
+      const categoryId = item.category[0];
+      const currentCategory = categories.find((cat) => cat.id === categoryId);
+      return currentCategory ? currentCategory.name : "";
+    }
+
+    return "";
+  };
+
+  console.log(JSON.stringify(item, null, 2), "item");
+
+  const [category, setCategory] = useState(getCurrentCategoryName());
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [name, setName] = useState(item.name || "");
-  const [price, setPrice] = useState(item.price ? item.price.toString() : "0");
+  const [price, setPrice] = useState(
+    item.base_price ? item.base_price.toString() : "0"
+  );
   const [description, setDescription] = useState(item.description || "");
   const [image] = useState(
     item.original_image && item.original_image.local_url
@@ -49,6 +64,16 @@ export default function EditMenuItemModal({
   );
   const [show, setShow] = useState(visible);
   const [closing, setClosing] = useState(false);
+
+  // Update form data when item changes
+  useEffect(() => {
+    if (visible && item) {
+      setName(item.name || "");
+      setPrice(item.base_price ? item.base_price.toString() : "0");
+      setDescription(item.description || "");
+      setCategory(getCurrentCategoryName());
+    }
+  }, [visible, item, categories]);
 
   React.useEffect(() => {
     if (visible) {
@@ -129,7 +154,9 @@ export default function EditMenuItemModal({
                 onPress={() => setShowCategoryDropdown((v) => !v)}
                 activeOpacity={0.8}
               >
-                <Text style={{ fontSize: 18 }}>{category}</Text>
+                <Text style={{ fontSize: 18 }}>
+                  {category || "Select a category"}
+                </Text>
                 <ChevronDown
                   size={22}
                   color="#888"
@@ -152,27 +179,35 @@ export default function EditMenuItemModal({
                     borderWidth: 1.5,
                     borderColor: "#D1D5DB",
                     borderTopWidth: 0,
-                    maxHeight: 320,
+                    maxHeight: 200,
                     overflow: "hidden",
                   }}
                 >
-                  {categories.map((cat) => (
-                    <TouchableOpacity
-                      key={cat.id}
-                      onPress={() => {
-                        setCategory(cat.name);
-                        setShowCategoryDropdown(false);
-                      }}
-                      style={{
-                        paddingVertical: 16,
-                        paddingHorizontal: 18,
-                        backgroundColor:
-                          cat.id === item.category_id ? "#E5E1EB" : "#F5F3F7",
-                      }}
-                    >
-                      <Text style={{ fontSize: 18 }}>{cat.name}</Text>
-                    </TouchableOpacity>
-                  ))}
+                  <ScrollView
+                    style={{ maxHeight: 200 }}
+                    showsVerticalScrollIndicator={true}
+                    nestedScrollEnabled={true}
+                  >
+                    {categories.map((cat) => (
+                      <TouchableOpacity
+                        key={cat.id}
+                        onPress={() => {
+                          setCategory(cat.name);
+                          setShowCategoryDropdown(false);
+                        }}
+                        style={{
+                          paddingVertical: 16,
+                          paddingHorizontal: 18,
+                          backgroundColor:
+                            cat.name === category ? "#E5E1EB" : "#F5F3F7",
+                          borderBottomWidth: 1,
+                          borderBottomColor: "#E5E7EB",
+                        }}
+                      >
+                        <Text style={{ fontSize: 18 }}>{cat.name}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
                 </View>
               )}
               {!showCategoryDropdown && <View style={{ marginBottom: 18 }} />}
@@ -250,7 +285,6 @@ export default function EditMenuItemModal({
                   borderRadius: 12,
                   paddingVertical: 16,
                   alignItems: "center",
-                  marginBottom: 16,
                 }}
                 onPress={() =>
                   onUpdate({
@@ -258,7 +292,7 @@ export default function EditMenuItemModal({
                     name,
                     price: parseFloat(price),
                     description,
-                    category: category, // Use the selected category
+                    category: category, // Use the selected category name
                     image,
                   })
                 }
@@ -267,21 +301,6 @@ export default function EditMenuItemModal({
                   style={{ color: "#fff", fontWeight: "bold", fontSize: 18 }}
                 >
                   Update Item
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={{
-                  backgroundColor: "#F43F5E",
-                  borderRadius: 12,
-                  paddingVertical: 16,
-                  alignItems: "center",
-                }}
-                onPress={onDelete}
-              >
-                <Text
-                  style={{ color: "#fff", fontWeight: "bold", fontSize: 18 }}
-                >
-                  Delete Item
                 </Text>
               </TouchableOpacity>
             </ScrollView>

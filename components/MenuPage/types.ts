@@ -2,12 +2,15 @@ export interface MenuItem {
   id: number; // Make id required and always a number
   name: string;
   price?: number;
+  base_price?: number; // Add base_price from API response
   description?: string;
   category?: string | number | (string | number)[];
   category_id?: number;
+  category_names?: string; // Add category_names from API response
   image_url?: string;
   original_image?: {
     local_url?: string;
+    working_url?: string;
   };
   is_available?: boolean;
   is_available_today?: boolean;
@@ -34,4 +37,12 @@ export interface ChangeAvailabilityModalProps {
   onChange: (option: string) => void;
   current: string;
   itemId: number;
+}
+
+export interface EditMenuItemModalProps {
+  visible: boolean;
+  onClose: () => void;
+  item: MenuItem;
+  onUpdate: (item: MenuItem) => void;
+  categories: Category[];
 }
