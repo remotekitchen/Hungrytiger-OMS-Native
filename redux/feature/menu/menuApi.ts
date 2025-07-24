@@ -44,6 +44,19 @@ export const menuApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["MENU"],
     }),
+    updateItem: builder.mutation({
+      query: ({ itemId, name, description, base_price, category }) => ({
+        url: `api/food/v1/menu-item/item/?id=${itemId}`,
+        method: "PATCH",
+        body: {
+          name,
+          description,
+          base_price,
+          category,
+        },
+      }),
+      invalidatesTags: ["MENU"],
+    }),
   }),
 });
 
@@ -53,4 +66,5 @@ export const {
   useGetMenuIdQuery,
   useGetItemsV1Query,
   useAvailableUnavailableItemMutation,
+  useUpdateItemMutation,
 } = menuApi;

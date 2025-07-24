@@ -50,6 +50,13 @@
     "plugins": [
       "expo-router",
       [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Hungry Tiger to access your photos to select menu item images.",
+          "cameraPermission": "Allow Hungry Tiger to access your camera to take menu item photos."
+        }
+      ],
+      [
         "expo-camera",
         {
           "cameraPermission": "Allow Hungry Tiger to access your camera",

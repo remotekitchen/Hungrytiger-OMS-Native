@@ -1,6 +1,7 @@
 import { MotiView } from "moti";
 import React, { useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+
 import MenuCategoryModal from "./MenuCategoryModal";
 
 // --- SkeletonLoader (copied from RecentOrders) ---
@@ -127,16 +128,51 @@ export default function MenuCategoryList({
   return (
     <ScrollView>
       <View>
-        <Text
+        <View
           style={{
-            fontWeight: "bold",
-            fontSize: 20,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
             marginBottom: 18,
-            color: "#111",
           }}
         >
-          Delivery Menu
-        </Text>
+          <Text
+            style={{
+              fontWeight: "bold",
+              fontSize: 20,
+              color: "#111",
+            }}
+          >
+            Delivery Menu
+          </Text>
+          {/* <TouchableOpacity
+            style={{
+              backgroundColor: "#2563eb",
+              borderRadius: 8,
+              paddingHorizontal: 12,
+              paddingVertical: 8,
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 6,
+            }}
+            activeOpacity={0.8}
+            onPress={() => {
+              // TODO: Implement add item functionality
+              console.log("Add Item pressed");
+            }}
+          >
+            <PlusCircle size={16} color="#fff" />
+            <Text
+              style={{
+                color: "#fff",
+                fontWeight: "600",
+                fontSize: 14,
+              }}
+            >
+              Add Item
+            </Text>
+          </TouchableOpacity> */}
+        </View>
         {isLoading ? (
           <SkeletonLoader />
         ) : isError ? (

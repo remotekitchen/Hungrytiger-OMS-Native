@@ -2,6 +2,7 @@ import { ArrowLeft, ChevronDown } from "lucide-react-native";
 import { AnimatePresence, MotiView } from "moti";
 import React, { useEffect, useState } from "react";
 import {
+  Alert,
   Image,
   Modal,
   ScrollView,
@@ -11,6 +12,7 @@ import {
   View,
 } from "react-native";
 
+import { useUpdateItemMutation } from "../../redux/feature/menu/menuApi";
 import { Category, MenuItem } from "./types";
 
 interface EditMenuItemModalProps {
@@ -46,7 +48,7 @@ export default function EditMenuItemModal({
     return "";
   };
 
-  console.log(JSON.stringify(item, null, 2), "item");
+  // console.log(JSON.stringify(item, null, 2), "item");
 
   const [category, setCategory] = useState(getCurrentCategoryName());
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
@@ -58,12 +60,13 @@ export default function EditMenuItemModal({
   const [image] = useState(
     item.original_image && item.original_image.local_url
       ? { uri: item.original_image.local_url }
-      : item.image_url
-      ? { uri: item.image_url }
-      : require("../../assets/images/main_icon_300x300.png")
+      : item.original_image && item.original_image.working_url
+      ? { uri: item.original_image.working_url }
+      : require("../../assets/images/main_icon.png")
   );
   const [show, setShow] = useState(visible);
   const [closing, setClosing] = useState(false);
+  const [updateItem, { isLoading }] = useUpdateItemMutation();
 
   // Update form data when item changes
   useEffect(() => {
@@ -89,6 +92,12 @@ export default function EditMenuItemModal({
       setClosing(false);
       onClose();
     }, 400);
+  };
+
+  // Get category ID from category name
+  const getCategoryId = (categoryName: string) => {
+    const category = categories.find((cat) => cat.name === categoryName);
+    return category ? category.id.toString() : "";
   };
 
   return (
@@ -219,8 +228,24 @@ export default function EditMenuItemModal({
               <View style={{ marginBottom: 18 }}>
                 <Image
                   source={image}
-                  style={{ width: 120, height: 120, borderRadius: 12 }}
+                  style={{
+                    width: 120,
+                    height: 120,
+                    borderRadius: 12,
+                    borderWidth: 2,
+                    borderColor: "#D1D5DB",
+                  }}
                 />
+                <Text
+                  style={{
+                    marginTop: 4,
+                    fontSize: 12,
+                    color: "#666",
+                    textAlign: "center",
+                  }}
+                >
+                  Image (Read Only)
+                </Text>
               </View>
               <Text
                 style={{ fontWeight: "bold", fontSize: 16, marginBottom: 8 }}
@@ -285,22 +310,74 @@ export default function EditMenuItemModal({
                   borderRadius: 12,
                   paddingVertical: 16,
                   alignItems: "center",
+                  opacity: isLoading ? 0.7 : 1,
                 }}
-                onPress={() =>
-                  onUpdate({
+                onPress={async () => {
+                  const updatedItem = {
                     ...item,
                     name,
                     price: parseFloat(price),
                     description,
                     category: category, // Use the selected category name
                     image,
-                  })
-                }
+                  };
+
+                  console.log(
+                    "Updated Item Data:",
+                    JSON.stringify(updatedItem, null, 2)
+                  );
+
+                  // Create the API payload as an object (not form data)
+                  const payload = {
+                    name: name,
+                    description: description,
+                    base_price: parseFloat(price),
+                    category: getCategoryId(category),
+                  };
+
+                  console.log("API Payload (Individual Fields):");
+                  console.log("itemId:", item.id);
+                  console.log("name:", name);
+                  console.log("description:", description);
+                  console.log("base_price:", parseFloat(price));
+                  console.log("category:", [getCategoryId(category)]); // Show as array
+
+                  try {
+                    const result = await updateItem({
+                      itemId: item.id,
+                      name: name,
+                      description: description,
+                      base_price: parseFloat(price),
+                      category: [getCategoryId(category)], // Send as array
+                    }).unwrap();
+
+                    console.log("API Response:", result);
+
+                    // Call onUpdate callback with updated item
+                    onUpdate({
+                      ...item,
+                      name: name,
+                      base_price: parseFloat(price),
+                      description: description,
+                      category: [getCategoryId(category)], // Send as array
+                    });
+
+                    // Close modal
+                    onClose();
+                  } catch (error) {
+                    console.error("Error updating item:", error);
+                    Alert.alert(
+                      "Error",
+                      "Failed to update item. Please try again."
+                    );
+                  }
+                }}
+                disabled={isLoading}
               >
                 <Text
                   style={{ color: "#fff", fontWeight: "bold", fontSize: 18 }}
                 >
-                  Update Item
+                  {isLoading ? "Updating..." : "Update Item"}
                 </Text>
               </TouchableOpacity>
             </ScrollView>
