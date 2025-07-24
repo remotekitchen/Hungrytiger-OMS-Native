@@ -10,13 +10,15 @@ import { useAudioPlayer } from "expo-audio";
 import { useFonts } from "expo-font";
 import * as Notifications from "expo-notifications";
 import { StatusBar } from "expo-status-bar";
+import * as Updates from "expo-updates";
 import { NativeBaseProvider, extendTheme } from "native-base";
 import "nativewind";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import Toast from "react-native-toast-message";
 import { Provider, useDispatch, useSelector } from "react-redux";
+import OTAUpdateModal from "../components/OTAUpdateModal";
 import "../global.css";
 import { registerForPushNotificationsAsync } from "../utils/registerForPushNotifications";
 import Home from "./home";
@@ -45,6 +47,14 @@ export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+
+  // Development-only function to test the update modal
+  const testUpdateModal = () => {
+    if (__DEV__) {
+      setShowUpdateModal(true);
+    }
+  };
 
   useEffect(() => {
     registerForPushNotificationsAsync().then((token) => {
@@ -61,7 +71,43 @@ export default function RootLayout() {
         // You can add navigation logic here if you want to deep link
       }
     );
-    return () => subscription.remove();
+
+    // Check for OTA updates
+    const checkForUpdates = async () => {
+      try {
+        // Only check for updates in production builds
+        if (Updates.isEnabled && !__DEV__) {
+          const update = await Updates.checkForUpdateAsync();
+          if (update.isAvailable) {
+            setShowUpdateModal(true);
+          }
+        }
+      } catch (error) {
+        console.error("Error checking for updates:", error);
+      }
+    };
+
+    // Check for updates when app starts (only in production)
+    if (!__DEV__) {
+      checkForUpdates();
+
+      // Set up periodic update checks (every 30 minutes) - only in production
+      const updateInterval = setInterval(checkForUpdates, 30 * 60 * 1000);
+
+      return () => {
+        subscription.remove();
+        clearInterval(updateInterval);
+      };
+    }
+
+    // Development: Add test function to global for testing
+    if (__DEV__) {
+      (global as any).testUpdateModal = testUpdateModal;
+    }
+
+    return () => {
+      subscription.remove();
+    };
   }, []);
 
   if (!loaded) {
@@ -79,6 +125,10 @@ export default function RootLayout() {
           {/* --- Global order sound logic end --- */}
           <AuthGate />
           <Toast />
+          <OTAUpdateModal
+            visible={showUpdateModal}
+            onUpdateComplete={() => setShowUpdateModal(false)}
+          />
         </Provider>
       </NativeBaseProvider>
     </GestureHandlerRootView>
