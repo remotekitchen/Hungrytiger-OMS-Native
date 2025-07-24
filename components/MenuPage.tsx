@@ -22,7 +22,7 @@ export default function MenuPage() {
   const { data: getMenuId } = useGetMenuIdQuery({});
   // console.log(JSON.stringify(getItemV1?.results[0]?.id, null, 2), "getItemV1");
   const menuId = getMenuId?.results[0]?.id;
-  console.log(JSON.stringify(menuId, null, 2), "getMenuId");
+  // console.log(JSON.stringify(menuId, null, 2), "getMenuId");
 
   const {
     data: getItemsV1,

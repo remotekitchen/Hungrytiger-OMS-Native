@@ -31,6 +31,19 @@ export const menuApi = apiSlice.injectEndpoints({
       }),
       providesTags: ["MENU"],
     }),
+
+    availableUnavailableItem: builder.mutation({
+      query: ({ itemId, today, indefinite }) => ({
+        url: `api/food/v1/menu-item/availability/`,
+        method: "PATCH",
+        body: {
+          itemId: itemId,
+          indefinite: indefinite,
+          today: today,
+        },
+      }),
+      invalidatesTags: ["MENU"],
+    }),
   }),
 });
 
@@ -39,4 +52,5 @@ export const {
   useGetItemsQuery,
   useGetMenuIdQuery,
   useGetItemsV1Query,
+  useAvailableUnavailableItemMutation,
 } = menuApi;
