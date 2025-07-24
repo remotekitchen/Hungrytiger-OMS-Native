@@ -4,18 +4,21 @@
     "slug": "HungryTiger-OMS",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/main_icon_300x300.png",
     "scheme": "hungrytigeroms",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "bundleIdentifier": "com.chatchefs.htoms",
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "UIBackgroundModes": ["audio"]
+      }
     },
     "android": {
       "package": "com.chatchefs.htoms",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/main_icon_300x300.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
@@ -25,24 +28,55 @@
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
         "CAMERA",
+        "RECORD_AUDIO",
+        "READ_MEDIA_IMAGES",
+        "READ_MEDIA_VIDEO",
+        "READ_MEDIA_AUDIO",
         "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
+        "WRITE_EXTERNAL_STORAGE",
+        "FOREGROUND_SERVICE",
+        "WAKE_LOCK",
+        "BLUETOOTH",
+        "BLUETOOTH_ADMIN",
+        "BLUETOOTH_CONNECT",
+        "BLUETOOTH_SCAN"
       ]
     },
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/main_icon_300x300.png"
     },
     "plugins": [
       "expo-router",
       [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Hungry Tiger to access your photos to select menu item images.",
+          "cameraPermission": "Allow Hungry Tiger to access your camera to take menu item photos."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Hungry Tiger to access your camera",
+          "microphonePermission": "Allow Hungry Tiger to access your microphone",
+          "recordAudioAndroid": true
+        }
+      ],
+      [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/main_icon_300x300.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
+        }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Allow HungryTiger-OMS to access your microphone."
         }
       ]
     ],
