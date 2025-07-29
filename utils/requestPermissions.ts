@@ -8,24 +8,30 @@ type PermissionMap = {
   [key: string]: string;
 };
 
-export const requestAllPermissions = async (): Promise<PermissionMap | { error: string }> => {
+export const requestAllPermissions = async (): Promise<
+  PermissionMap | { error: string }
+> => {
   const results: PermissionMap = {};
 
   try {
     // 📍 Location
-    const { status: locationStatus } = await Location.requestForegroundPermissionsAsync();
+    const { status: locationStatus } =
+      await Location.requestForegroundPermissionsAsync();
     results["location"] = locationStatus;
 
     // 🔔 Notifications
-    const { status: notifStatus } = await Notifications.requestPermissionsAsync();
+    const { status: notifStatus } =
+      await Notifications.requestPermissionsAsync();
     results["notifications"] = notifStatus;
 
     // 📸 Camera (modern method using Camera module)
-    const { status: cameraStatus } = await Camera.requestCameraPermissionsAsync();
+    const { status: cameraStatus } =
+      await Camera.requestCameraPermissionsAsync();
     results["camera"] = cameraStatus;
 
     // 🗂 Media/Storage
-    const { status: mediaStatus } = await MediaLibrary.requestPermissionsAsync();
+    const { status: mediaStatus } =
+      await MediaLibrary.requestPermissionsAsync();
     results["media"] = mediaStatus;
 
     // 🎙 Microphone
@@ -33,9 +39,14 @@ export const requestAllPermissions = async (): Promise<PermissionMap | { error: 
     results["microphone"] = micStatus;
 
     // ❗ Log denied permissions
-    const denied = Object.entries(results).filter(([_, status]) => status !== "granted");
+    const denied = Object.entries(results).filter(
+      ([_, status]) => status !== "granted"
+    );
     if (denied.length > 0) {
-      console.warn("Some permissions were denied:", denied.map(([key]) => key).join(", "));
+      console.warn(
+        "Some permissions were denied:",
+        denied.map(([key]) => key).join(", ")
+      );
     }
 
     return results;
