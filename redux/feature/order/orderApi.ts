@@ -12,8 +12,8 @@ export const ordersApi = apiSlice.injectEndpoints({
         },
       }),
       providesTags: ["ORDER"],
-      // Keep cache for 30 seconds
-      keepUnusedDataFor: 30,
+      // Optimize cache settings for better performance
+      keepUnusedDataFor: 30, // Keep data for 30 seconds
     }),
 
     acceptOrder: builder.mutation({
@@ -67,6 +67,8 @@ export const ordersApi = apiSlice.injectEndpoints({
         method: "GET",
       }),
       providesTags: ["ORDER"],
+      // Optimize cache for history data
+      keepUnusedDataFor: 300, // Keep history data for 5 minutes
     }),
   }),
 });

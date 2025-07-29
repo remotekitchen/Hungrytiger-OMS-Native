@@ -12,9 +12,7 @@
       "bundleIdentifier": "com.chatchefs.htoms",
       "supportsTablet": true,
       "infoPlist": {
-        "UIBackgroundModes": [
-          "audio"
-        ]
+        "UIBackgroundModes": ["audio"]
       }
     },
     "android": {
@@ -30,14 +28,8 @@
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
         "CAMERA",
-        "READ_MEDIA_IMAGES",
-        "READ_MEDIA_VIDEO",
         "FOREGROUND_SERVICE",
-        "WAKE_LOCK",
-        "BLUETOOTH",
-        "BLUETOOTH_ADMIN",
-        "BLUETOOTH_CONNECT",
-        "BLUETOOTH_SCAN"
+        "WAKE_LOCK"
       ]
     },
     "web": {
@@ -70,14 +62,7 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ],
-      [
-        "expo-audio",
-        {
-          "microphonePermission": "Allow HungryTiger-OMS to access your microphone."
-        }
-      ],
-      "expo-barcode-scanner"
+      ]
     ],
     "experiments": {
       "typedRoutes": true

@@ -1,5 +1,4 @@
 import { ArrowLeft } from "lucide-react-native";
-import { AnimatePresence, MotiView } from "moti";
 import React, { useState } from "react";
 import { Modal, Text, TouchableOpacity, View } from "react-native";
 
@@ -19,7 +18,6 @@ export default function MenuCategoryModal({
   categories = [],
 }: MenuCategoryModalProps) {
   const [show, setShow] = useState(visible);
-  const [closing, setClosing] = useState(false);
   const [editIdx, setEditIdx] = useState<number | null>(null);
   const [availModalIdx, setAvailModalIdx] = useState<number | null>(null);
   const [fullScreenImage, setFullScreenImage] = useState<string | null>(null);
@@ -27,17 +25,12 @@ export default function MenuCategoryModal({
   React.useEffect(() => {
     if (visible) {
       setShow(true);
-      setClosing(false);
     }
   }, [visible]);
 
   const handleClose = () => {
-    setClosing(true);
-    setTimeout(() => {
-      setShow(false);
-      setClosing(false);
-      onClose();
-    }, 400);
+    setShow(false);
+    onClose();
   };
 
   // Filter items by categoryId
@@ -53,7 +46,7 @@ export default function MenuCategoryModal({
     setFullScreenImage(imageUri);
   };
 
-  const handleAvailabilityChange = (index: number) => {
+  const handleAvailabilityChange = (index: number, value: boolean) => {
     setAvailModalIdx(index);
   };
 
@@ -92,93 +85,76 @@ export default function MenuCategoryModal({
     setEditIdx(null);
   };
 
+  if (!show) return null;
+
   return (
-    <Modal visible={show} animationType="none" transparent>
-      <AnimatePresence>
-        {show && !closing && (
-          <MotiView
-            from={{ translateX: 400, opacity: 0 }}
-            animate={{ translateX: 0, opacity: 1 }}
-            exit={{ translateX: 400, opacity: 0 }}
-            transition={{ type: "timing", duration: 400 }}
-            style={{
-              flex: 1,
-              backgroundColor: "#fff",
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              zIndex: 100,
-            }}
-          >
-            {/* Header */}
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                padding: 18,
-                paddingBottom: 8,
-              }}
-            >
-              <TouchableOpacity
-                onPress={handleClose}
-                style={{ marginRight: 12 }}
-              >
-                <ArrowLeft size={28} color="#222" />
-              </TouchableOpacity>
-              <Text style={{ fontWeight: "bold", fontSize: 20, color: "#111" }}>
-                {category}
-              </Text>
-            </View>
+    <Modal visible={show} animationType="slide" transparent={false}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: "#fff",
+        }}
+      >
+        {/* Header */}
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            padding: 18,
+            paddingBottom: 8,
+          }}
+        >
+          <TouchableOpacity onPress={handleClose} style={{ marginRight: 12 }}>
+            <ArrowLeft size={28} color="#222" />
+          </TouchableOpacity>
+          <Text style={{ fontWeight: "bold", fontSize: 20, color: "#111" }}>
+            {category}
+          </Text>
+        </View>
 
-            {/* Status Indicators */}
-            <StatusIndicators />
+        {/* Status Indicators */}
+        <StatusIndicators />
 
-            {/* Menu Items List */}
-            <MenuItemList
-              items={filteredItems}
-              onImagePress={handleImagePress}
-              onAvailabilityChange={handleAvailabilityChange}
-              onEdit={handleEdit}
-            />
+        {/* Menu Items List */}
+        <MenuItemList
+          items={filteredItems}
+          onAvailabilityChange={handleAvailabilityChange}
+          onEdit={handleEdit}
+          onImagePress={handleImagePress}
+        />
 
-            {/* Modals */}
-            <ChangeAvailabilityModal
-              visible={availModalIdx !== null}
-              current={
-                availModalIdx !== null
-                  ? getCurrentAvailabilityStatus(filteredItems[availModalIdx])
-                  : "out_of_stock"
-              }
-              itemId={
-                availModalIdx !== null
-                  ? Number(filteredItems[availModalIdx].id)
-                  : 0
-              }
-              onClose={() => setAvailModalIdx(null)}
-              onChange={handleChangeAvailability}
-            />
+        {/* Modals */}
+        <ChangeAvailabilityModal
+          visible={availModalIdx !== null}
+          current={
+            availModalIdx !== null
+              ? getCurrentAvailabilityStatus(filteredItems[availModalIdx])
+              : "out_of_stock"
+          }
+          itemId={
+            availModalIdx !== null ? Number(filteredItems[availModalIdx].id) : 0
+          }
+          onClose={() => setAvailModalIdx(null)}
+          onChange={handleChangeAvailability}
+        />
 
-            {editIdx !== null && (
-              <EditMenuItemModal
-                visible={editIdx !== null}
-                item={filteredItems[editIdx]}
-                onClose={() => setEditIdx(null)}
-                onUpdate={handleUpdateItem}
-                categories={categories}
-              />
-            )}
-          </MotiView>
+        {editIdx !== null && (
+          <EditMenuItemModal
+            visible={editIdx !== null}
+            item={filteredItems[editIdx]}
+            onClose={() => setEditIdx(null)}
+            onUpdate={handleUpdateItem}
+            categories={categories}
+          />
         )}
-      </AnimatePresence>
 
-      {/* Full Screen Image Modal */}
-      <FullScreenImageModal
-        visible={fullScreenImage !== null}
-        imageUri={fullScreenImage}
-        onClose={() => setFullScreenImage(null)}
-      />
+        {/* Full Screen Image Modal */}
+        <FullScreenImageModal
+          visible={fullScreenImage !== null}
+          imageUri={fullScreenImage}
+          onClose={() => setFullScreenImage(null)}
+        />
+      </View>
     </Modal>
   );
 }

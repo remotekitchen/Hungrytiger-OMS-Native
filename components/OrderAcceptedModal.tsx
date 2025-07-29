@@ -1,58 +1,105 @@
-import { CheckCheck, XCircle } from "lucide-react-native";
-import { MotiView } from "moti";
 import React from "react";
-import { Modal, Text, View } from "react-native";
+import { Text, View } from "react-native";
+
+interface OrderStatusModalProps {
+  visible: boolean;
+  type: "accepted" | "rejected" | "ready" | "payment";
+}
 
 export default function OrderStatusModal({
   visible,
   type,
-  bgColor,
-  icon,
-  title,
-  message,
-}: {
-  visible: boolean;
-  type?: "accepted" | "rejected";
-  bgColor?: string;
-  icon?: React.ReactNode;
-  title?: string;
-  message?: string;
-}) {
-  const isAccepted = type === "accepted";
+}: OrderStatusModalProps) {
+  if (!visible) return null;
+
+  const getModalConfig = () => {
+    switch (type) {
+      case "accepted":
+        return {
+          backgroundColor: "#10B981", // Green
+          icon: "✓",
+          title: "Accepted",
+          message: "You accepted in under 20 seconds.\nKeep up the good work!",
+        };
+      case "rejected":
+        return {
+          backgroundColor: "#EF4444", // Red
+          icon: "✕",
+          title: "Rejected",
+          message: "Order has been rejected.",
+        };
+      case "ready":
+        return {
+          backgroundColor: "#3B82F6", // Blue
+          icon: "📦",
+          title: "Ready for Pickup",
+          message: "Order is ready for pickup!",
+        };
+      case "payment":
+        return {
+          backgroundColor: "#8B5CF6", // Purple
+          icon: "💰",
+          title: "Payment Received",
+          message: "Payment has been received!",
+        };
+      default:
+        return {
+          backgroundColor: "#10B981",
+          icon: "✓",
+          title: "Success",
+          message: "Action completed successfully!",
+        };
+    }
+  };
+
+  const config = getModalConfig();
+
   return (
-    <Modal visible={visible} animationType="fade" transparent>
+    <View
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: config.backgroundColor,
+        justifyContent: "center",
+        alignItems: "center",
+        zIndex: 1000,
+      }}
+    >
       <View
-        className={`flex-1 ${
-          bgColor ? bgColor : isAccepted ? "bg-green-500" : "bg-red-500"
-        } justify-center items-center`}
+        style={{
+          alignItems: "center",
+          padding: 20,
+        }}
       >
-        <MotiView
-          from={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ type: "timing", duration: 400 }}
-          className="items-center justify-center"
+        <Text style={{ fontSize: 32, color: "white", marginBottom: 30 }}>
+          {config.icon}
+        </Text>
+        <Text
+          style={{
+            color: "white",
+            fontSize: 32,
+            fontWeight: "bold",
+            marginBottom: 20,
+            textAlign: "center",
+          }}
         >
-          {icon ? (
-            icon
-          ) : isAccepted ? (
-            <CheckCheck size={64} color="#fff" className="mb-4" />
-          ) : (
-            <XCircle size={64} color="#fff" className="mb-4" />
-          )}
-          <Text className="text-3xl text-white font-bold mb-4">
-            {title ? title : isAccepted ? "Accepted" : "Rejected"}
-          </Text>
-          {message ? (
-            <Text className="text-lg text-white text-center font-medium">
-              {message}
-            </Text>
-          ) : isAccepted ? (
-            <Text className="text-lg text-white text-center font-medium">
-              You accepted in under 20 seconds.{"\n"}Keep up the good work!
-            </Text>
-          ) : null}
-        </MotiView>
+          {config.title}
+        </Text>
+        <Text
+          style={{
+            color: "white",
+            fontSize: 18,
+            textAlign: "center",
+            opacity: 0.9,
+            lineHeight: 24,
+          }}
+        >
+          {config.message}
+        </Text>
       </View>
-    </Modal>
+    </View>
   );
 }

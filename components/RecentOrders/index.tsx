@@ -1,5 +1,4 @@
 import { Search } from "lucide-react-native";
-import { MotiView } from "moti";
 import React, { useState } from "react";
 import { Text, TextInput, View } from "react-native";
 import FilterDropdown from "./FilterDropdown";
@@ -12,11 +11,8 @@ function SkeletonLoader() {
   return (
     <View className="px-4 pb-4 flex-1 justify-center">
       {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-        <MotiView
+        <View
           key={i}
-          from={{ opacity: 0.3, translateY: 20 }}
-          animate={{ opacity: 1, translateY: 0 }}
-          transition={{ type: "timing", duration: 600, delay: i * 120 }}
           className="flex-row items-center p-4 mb-2 bg-gray-100 rounded-lg"
         >
           <View className="w-10 h-10 bg-gray-300 rounded-full mr-4" />
@@ -25,7 +21,7 @@ function SkeletonLoader() {
             <View className="h-3 bg-gray-200 rounded w-1/3 mb-1" />
             <View className="h-3 bg-gray-200 rounded w-1/4" />
           </View>
-        </MotiView>
+        </View>
       ))}
     </View>
   );

@@ -146,7 +146,10 @@ export default function Home() {
   // }
 
   let SectionComponent = null;
-  if (activeSection === "orders") SectionComponent = <OrdersSection />;
+  if (activeSection === "orders")
+    SectionComponent = (
+      <OrdersSection onNavigate={(section) => setActiveSection(section)} />
+    );
   if (activeSection === "recent") SectionComponent = <RecentOrders />;
   if (activeSection === "performance") SectionComponent = <Performance />;
   if (activeSection === "menu") SectionComponent = <MenuPage />;

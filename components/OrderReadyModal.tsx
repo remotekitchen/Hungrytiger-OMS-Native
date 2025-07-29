@@ -2,8 +2,7 @@ import {
   useReadyForPickupMutation,
   useReceivedPaymentMutation,
 } from "@/redux/feature/order/orderApi";
-import { ArrowLeft, CheckCheck, Printer } from "lucide-react-native";
-import { MotiView } from "moti";
+import { ArrowLeft, Printer } from "lucide-react-native";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -14,8 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import OrderAcceptedModal from "./OrderAcceptedModal";
-import OrderReadyStatusModal from "./OrderReadyStatusModal";
+import OrderStatusModal from "./OrderAcceptedModal";
 
 interface OrderItem {
   id: number;
@@ -55,10 +53,15 @@ export default function OrderReadyModal({
 }: {
   visible: boolean;
   onClose: () => void;
-  order: Order;
+  order: Order | null;
   onReadyForDelivery: () => void;
   restaurantName: string;
 }) {
+  // Don't render if order is null
+  if (!order) {
+    return null;
+  }
+
   // Calculate the accepted time in ms
   const acceptedTime = new Date(order.created_date).getTime();
   const [now, setNow] = useState(Date.now());
@@ -150,13 +153,7 @@ export default function OrderReadyModal({
   return (
     <Modal visible={visible} animationType="fade" transparent={false}>
       <View className="flex-1 bg-white justify-start items-stretch">
-        <MotiView
-          from={{ translateY: 60, opacity: 0 }}
-          animate={{ translateY: 0, opacity: 1 }}
-          exit={{ translateY: 60, opacity: 0 }}
-          transition={{ type: "timing", duration: 350 }}
-          className="flex-1"
-        >
+        <View className="flex-1">
           <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
             {/* Header */}
             <View className="flex-row items-center justify-between px-5 pt-5 pb-2">
@@ -393,17 +390,10 @@ export default function OrderReadyModal({
               </TouchableOpacity>
             )}
           </View>
-          {/* Show OrderReadyStatusModal if needed */}
-          <OrderReadyStatusModal visible={showStatusModal} />
-          {/* Show Payment Completed Modal */}
-          <OrderAcceptedModal
-            visible={showPaymentModal}
-            bgColor="bg-blue-700"
-            icon={<CheckCheck size={64} color="#fff" className="mb-4" />}
-            title="Order Completed!"
-            message="Payment received and order is now completed."
-          />
-        </MotiView>
+          {/* Show Status Modals */}
+          <OrderStatusModal visible={showStatusModal} type="ready" />
+          <OrderStatusModal visible={showPaymentModal} type="payment" />
+        </View>
       </View>
     </Modal>
   );

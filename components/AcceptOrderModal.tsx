@@ -3,8 +3,7 @@ import {
   useRejectOrderMutation,
 } from "@/redux/feature/order/orderApi";
 import { ArrowLeft, Printer } from "lucide-react-native";
-import { MotiView } from "moti";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -47,7 +46,7 @@ interface Order {
 interface AcceptOrderModalProps {
   visible: boolean;
   onClose: () => void;
-  order: Order;
+  order: Order | null;
   restaurantName: string;
 }
 
@@ -57,12 +56,24 @@ export default function AcceptOrderModal({
   order,
   restaurantName,
 }: AcceptOrderModalProps) {
-  const [mins, setMins] = useState(order.prep_time);
+  const [mins, setMins] = useState(0);
   const [acceptOrder, { isLoading: isAccepting }] = useAcceptOrderMutation();
   const [rejectOrder, { isLoading: isRejecting }] = useRejectOrderMutation();
   const [showStatusModal, setShowStatusModal] = useState<
     null | "accepted" | "rejected"
   >(null);
+
+  // Update mins when order changes
+  useEffect(() => {
+    if (order?.prep_time) {
+      setMins(order.prep_time);
+    }
+  }, [order?.prep_time]);
+
+  // Don't render if order is null
+  if (!order) {
+    return null;
+  }
 
   const handleAccept = async () => {
     try {
@@ -108,8 +119,6 @@ export default function AcceptOrderModal({
     ]);
   };
 
-  // console.log(JSON.stringify(order, null, 2), "get-orderrr");
-
   // Calculate total items
   const totalItems = order.orderitem_set.reduce(
     (sum, item) => sum + item.quantity,
@@ -124,13 +133,7 @@ export default function AcceptOrderModal({
   return (
     <Modal visible={visible} animationType="fade" transparent={false}>
       <View className="flex-1 bg-white justify-start items-stretch">
-        <MotiView
-          from={{ translateY: 60, opacity: 0 }}
-          animate={{ translateY: 0, opacity: 1 }}
-          exit={{ translateY: 60, opacity: 0 }}
-          transition={{ type: "timing", duration: 350 }}
-          className="flex-1"
-        >
+        <View className="flex-1">
           <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
             {/* Header */}
             <View className="flex-row items-center justify-between px-5 pt-5 pb-2">
@@ -314,7 +317,7 @@ export default function AcceptOrderModal({
               </Text>
             </TouchableOpacity>
           </View>
-        </MotiView>
+        </View>
         {/* Show OrderAcceptedModal if needed */}
         <OrderStatusModal
           visible={!!showStatusModal}

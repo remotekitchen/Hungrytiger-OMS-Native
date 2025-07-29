@@ -1,31 +1,61 @@
-import { Box } from "lucide-react-native";
-import { MotiView } from "moti";
 import React from "react";
-import { Modal, Text, View } from "react-native";
+import { Text, View } from "react-native";
+
+interface OrderReadyStatusModalProps {
+  visible: boolean;
+}
 
 export default function OrderReadyStatusModal({
   visible,
-}: {
-  visible: boolean;
-}) {
+}: OrderReadyStatusModalProps) {
+  if (!visible) return null;
+
   return (
-    <Modal visible={visible} animationType="fade" transparent>
-      <View className="flex-1 bg-yellow-400 justify-center items-center">
-        <MotiView
-          from={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ type: "timing", duration: 400 }}
-          className="items-center justify-center"
+    <View
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        justifyContent: "center",
+        alignItems: "center",
+        zIndex: 1000,
+      }}
+    >
+      <View
+        style={{
+          backgroundColor: "#10B981",
+          padding: 30,
+          borderRadius: 20,
+          alignItems: "center",
+          margin: 20,
+        }}
+      >
+        <Text style={{ fontSize: 48, marginBottom: 20 }}>✅</Text>
+        <Text
+          style={{
+            color: "white",
+            fontSize: 24,
+            fontWeight: "bold",
+            marginBottom: 10,
+            textAlign: "center",
+          }}
         >
-          <Box size={64} color="#fff" className="mb-4" />
-          <Text className="text-3xl text-white font-bold mb-4">
-            Ready for Pickup!
-          </Text>
-          <Text className="text-lg text-white text-center font-medium">
-            The order is now ready for pickup by the rider.
-          </Text>
-        </MotiView>
+          Order Ready!
+        </Text>
+        <Text
+          style={{
+            color: "white",
+            fontSize: 16,
+            textAlign: "center",
+            opacity: 0.9,
+          }}
+        >
+          The order has been marked as ready for pickup.
+        </Text>
       </View>
-    </Modal>
+    </View>
   );
 }

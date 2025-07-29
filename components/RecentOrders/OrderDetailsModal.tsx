@@ -1,6 +1,5 @@
 import { useGetRestaurantQuery } from "@/redux/feature/restaurant/restaurantApi";
 import { ArrowLeft, CheckCircle2, Printer, User } from "lucide-react-native";
-import { AnimatePresence, MotiView } from "moti";
 import React, { useEffect, useState } from "react";
 import {
   Image,
@@ -50,23 +49,19 @@ export default function OrderDetailsModal({
   order: any;
 }) {
   const [show, setShow] = useState(visible);
-  const [isExiting, setIsExiting] = useState(false);
   const { data: getRestaurants } = useGetRestaurantQuery({});
   const restaurantName = getRestaurants?.results[0]?.name;
+
   useEffect(() => {
     if (visible) setShow(true);
   }, [visible]);
 
   const handleClose = () => {
-    setIsExiting(true);
-    setTimeout(() => {
-      setIsExiting(false);
-      setShow(false);
-      onClose();
-    }, 400); // match the MotiView exit duration
+    setShow(false);
+    onClose();
   };
 
-  if (!order && !show) return null;
+  if (!order || !show) return null;
 
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
@@ -81,191 +76,169 @@ export default function OrderDetailsModal({
   const statusInfo = getStatusInfo(order?.status || "completed");
 
   return (
-    <Modal visible={show} animationType="none" transparent>
-      <AnimatePresence>
-        {visible && !isExiting && (
-          <MotiView
-            from={{ translateX: 400 }}
-            animate={{ translateX: 0 }}
-            exit={{ translateX: 400 }}
-            transition={{ type: "timing", duration: 400 }}
-            className="flex-1 bg-white"
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              zIndex: 50,
-            }}
-          >
-            <View className="flex-row items-center px-2 pt-8 pb-2">
-              <TouchableOpacity onPress={handleClose} className="p-2">
-                <ArrowLeft size={26} color="#222" />
-              </TouchableOpacity>
-              <Text className="text-xl font-bold flex-1 text-center">
-                #{order.id}
-              </Text>
-              <TouchableOpacity className="p-2">
-                <Printer size={24} color="#222" />
-              </TouchableOpacity>
-            </View>
-            <ScrollView
-              className="flex-1"
-              contentContainerStyle={{ paddingBottom: 32 }}
+    <Modal visible={show} animationType="slide" transparent={false}>
+      <View className="flex-1 bg-white">
+        <View className="flex-row items-center px-2 pt-8 pb-2">
+          <TouchableOpacity onPress={handleClose} className="p-2">
+            <ArrowLeft size={26} color="#222" />
+          </TouchableOpacity>
+          <Text className="text-xl font-bold flex-1 text-center">
+            #{order.id}
+          </Text>
+          <TouchableOpacity className="p-2">
+            <Printer size={24} color="#222" />
+          </TouchableOpacity>
+        </View>
+        <ScrollView
+          className="flex-1"
+          contentContainerStyle={{ paddingBottom: 32 }}
+        >
+          <View className="px-4">
+            <View
+              className="rounded-lg px-4 py-3 mb-4"
+              style={{ backgroundColor: statusInfo.bg }}
             >
-              <View className="px-4">
-                <View
-                  className="rounded-lg px-4 py-3 mb-4"
-                  style={{ backgroundColor: statusInfo.bg }}
+              <View className="flex-row items-center gap-x-2">
+                {statusInfo.icon}
+                <Text
+                  className="font-bold text-base"
+                  style={{ color: statusInfo.color }}
                 >
-                  <View className="flex-row items-center gap-x-2">
-                    {statusInfo.icon}
-                    <Text
-                      className="font-bold text-base"
-                      style={{ color: statusInfo.color }}
-                    >
-                      {statusInfo.title}
-                    </Text>
-                  </View>
+                  {statusInfo.title}
+                </Text>
+              </View>
+              <Text
+                className="text-sm mt-1"
+                style={{ color: statusInfo.color }}
+              >
+                {statusInfo.desc}
+              </Text>
+            </View>
+            <View
+              className="rounded-2xl border border-gray-200 bg-white px-4 py-3 flex-row items-center justify-between mb-4"
+              style={{
+                shadowColor: "#000",
+                shadowOpacity: 0.04,
+                shadowRadius: 8,
+                elevation: 2,
+              }}
+            >
+              <View className="flex-row items-center">
+                <Image
+                  source={require("../../assets/images/main_icon.png")}
+                  className="w-10 h-10 rounded-full mr-3"
+                />
+                <View>
                   <Text
-                    className="text-sm mt-1"
-                    style={{ color: statusInfo.color }}
+                    className="text-base font-bold"
+                    style={{ color: mainColor }}
                   >
-                    {statusInfo.desc}
+                    {restaurantName ? restaurantName : "Tiger Eats"}
                   </Text>
-                </View>
-                <View
-                  className="rounded-2xl border border-gray-200 bg-white px-4 py-3 flex-row items-center justify-between mb-4"
-                  style={{
-                    shadowColor: "#000",
-                    shadowOpacity: 0.04,
-                    shadowRadius: 8,
-                    elevation: 2,
-                  }}
-                >
-                  <View className="flex-row items-center">
-                    <Image
-                      source={require("../../assets/images/main_icon.png")}
-                      className="w-10 h-10 rounded-full mr-3"
-                    />
-                    <View>
-                      <Text
-                        className="text-base font-bold"
-                        style={{ color: mainColor }}
-                      >
-                        {restaurantName ? restaurantName : "Tiger Eats"}
-                      </Text>
-                      <Text className="text-3xl font-extrabold text-black py-3">
-                        #{order.id}
-                      </Text>
-                      <Text className="text-xs text-gray-500">
-                        {order.order_id}
-                      </Text>
-                    </View>
-                  </View>
-                  <Text className="text-lg font-bold text-black">
-                    {formatTime(order.created_date)}
+                  <Text className="text-3xl font-extrabold text-black py-3">
+                    #{order.id}
                   </Text>
-                </View>
-                <View className="flex-row items-center mb-4">
-                  <View className="w-10 h-10 justify-center items-center">
-                    <User size={24} color="#888" />
-                  </View>
-                  <View className="ml-2">
-                    <Text
-                      className="text-xs font-bold"
-                      style={{ color: mainColor }}
-                    >
-                      Customer
-                    </Text>
-                    <Text className="text-base font-bold text-black">
-                      {order.customer}
-                    </Text>
-                  </View>
-                </View>
-                <View className="rounded-2xl bg-gray-50 px-4 py-3 mb-4">
-                  {order.orderitem_set &&
-                    order.orderitem_set.map((item: any) => (
-                      <View
-                        key={item.id}
-                        className="flex-row items-center justify-between mb-1"
-                      >
-                        <Text className="text-lg font-bold text-black">
-                          {item.quantity}x{" "}
-                          <Text className="font-medium text-black text-lg">
-                            {item.menu_item?.name || "-"}
-                          </Text>
-                        </Text>
-                        <Text className="text-lg font-medium text-black">
-                          {formatCurrency(
-                            item.quantity * (item.menu_item?.base_price || 0)
-                          )}
-                        </Text>
-                      </View>
-                    ))}
-                  <Text className="text-[#FFA726] text-xs font-bold mt-2">
-                    PLEASE DO NOT PROVIDE CUTLERY
-                  </Text>
-                  {order.checkout_note ? (
-                    <Text className="text-pink-600 text-xs font-bold mt-2">
-                      {order.checkout_note.toUpperCase()}
-                    </Text>
-                  ) : null}
-                </View>
-                <View
-                  className="rounded-2xl bg-white px-4 py-3 mb-4"
-                  style={{ borderWidth: 1, borderColor: "#eee" }}
-                >
-                  <View className="flex-row justify-between mb-1">
-                    <Text className="font-bold text-lg text-black">
-                      Subtotal
-                    </Text>
-                    <Text className="font-bold text-lg text-black">
-                      {formatCurrency(order.subtotal)}
-                    </Text>
-                  </View>
-                  <View className="flex-row justify-between mb-1">
-                    <Text className="text-base text-black">VAT (Incl.)</Text>
-                    <Text className="text-base text-black">
-                      {formatCurrency(order.tax)}
-                    </Text>
-                  </View>
-                  {order.discount > 0 && (
-                    <View className="flex-row justify-between mb-1">
-                      <Text className="text-base text-black">
-                        Discount/Voucher
-                      </Text>
-                      <Text className="text-base text-[#FFA726]">
-                        - {formatCurrency(order.discount)}
-                      </Text>
-                    </View>
-                  )}
-                  <View className="flex-row justify-between items-center mt-2">
-                    <Text className="font-bold text-xl text-black">Total</Text>
-                    <Text className="font-extrabold text-2xl text-black">
-                      {formatCurrency(order.total)}
-                    </Text>
-                  </View>
-                </View>
-                <View className="mt-2 rounded-lg bg-gray-100 py-3 items-center">
-                  <Text className="font-bold text-sm text-black">
-                    {order.payment_method
-                      ? order.payment_method.toUpperCase().replace(/_/g, " ")
-                      : "PAYMENT"}
-                  </Text>
-                  <Text className="text-xs text-gray-600 mt-1">
-                    Paid with{" "}
-                    {order.payment_method
-                      ? order.payment_method.replace(/_/g, " ")
-                      : "Payment"}
+                  <Text className="text-xs text-gray-500">
+                    {order.order_id}
                   </Text>
                 </View>
               </View>
-            </ScrollView>
-          </MotiView>
-        )}
-      </AnimatePresence>
+              <Text className="text-lg font-bold text-black">
+                {formatTime(order.created_date)}
+              </Text>
+            </View>
+            <View className="flex-row items-center mb-4">
+              <View className="w-10 h-10 justify-center items-center">
+                <User size={24} color="#888" />
+              </View>
+              <View className="ml-2">
+                <Text
+                  className="text-xs font-bold"
+                  style={{ color: mainColor }}
+                >
+                  Customer
+                </Text>
+                <Text className="text-base font-bold text-black">
+                  {order.customer}
+                </Text>
+              </View>
+            </View>
+            <View className="rounded-2xl bg-gray-50 px-4 py-3 mb-4">
+              {order.orderitem_set &&
+                order.orderitem_set.map((item: any) => (
+                  <View
+                    key={item.id}
+                    className="flex-row items-center justify-between mb-1"
+                  >
+                    <Text className="text-lg font-bold text-black">
+                      {item.quantity}x{" "}
+                      <Text className="font-medium text-black text-lg">
+                        {item.menu_item?.name || "-"}
+                      </Text>
+                    </Text>
+                    <Text className="text-lg font-medium text-black">
+                      {formatCurrency(
+                        item.quantity * (item.menu_item?.base_price || 0)
+                      )}
+                    </Text>
+                  </View>
+                ))}
+              <Text className="text-[#FFA726] text-xs font-bold mt-2">
+                PLEASE DO NOT PROVIDE CUTLERY
+              </Text>
+              {order.checkout_note ? (
+                <Text className="text-pink-600 text-xs font-bold mt-2">
+                  {order.checkout_note.toUpperCase()}
+                </Text>
+              ) : null}
+            </View>
+            <View
+              className="rounded-2xl bg-white px-4 py-3 mb-4"
+              style={{ borderWidth: 1, borderColor: "#eee" }}
+            >
+              <View className="flex-row justify-between mb-1">
+                <Text className="font-bold text-lg text-black">Subtotal</Text>
+                <Text className="font-bold text-lg text-black">
+                  {formatCurrency(order.subtotal)}
+                </Text>
+              </View>
+              <View className="flex-row justify-between mb-1">
+                <Text className="text-base text-black">VAT (Incl.)</Text>
+                <Text className="text-base text-black">
+                  {formatCurrency(order.tax)}
+                </Text>
+              </View>
+              {order.discount > 0 && (
+                <View className="flex-row justify-between mb-1">
+                  <Text className="text-base text-black">Discount/Voucher</Text>
+                  <Text className="text-base text-[#FFA726]">
+                    - {formatCurrency(order.discount)}
+                  </Text>
+                </View>
+              )}
+              <View className="flex-row justify-between items-center mt-2">
+                <Text className="font-bold text-xl text-black">Total</Text>
+                <Text className="font-extrabold text-2xl text-black">
+                  {formatCurrency(order.total)}
+                </Text>
+              </View>
+            </View>
+            <View className="mt-2 rounded-lg bg-gray-100 py-3 items-center">
+              <Text className="font-bold text-sm text-black">
+                {order.payment_method
+                  ? order.payment_method.toUpperCase().replace(/_/g, " ")
+                  : "PAYMENT"}
+              </Text>
+              <Text className="text-xs text-gray-600 mt-1">
+                Paid with{" "}
+                {order.payment_method
+                  ? order.payment_method.replace(/_/g, " ")
+                  : "Payment"}
+              </Text>
+            </View>
+          </View>
+        </ScrollView>
+      </View>
     </Modal>
   );
 }

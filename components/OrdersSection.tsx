@@ -1,8 +1,13 @@
 import { useRealtimeOrders } from "@/hooks/useRealtimeOrders";
 import { useGetRestaurantQuery } from "@/redux/feature/restaurant/restaurantApi";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
-  Image,
   RefreshControl,
   ScrollView,
   Text,
@@ -15,7 +20,11 @@ import OrderCategoryHeader from "./OrderCategoryHeader";
 import OrderEmptyCard from "./OrderEmptyCard";
 import OrderReadyModal from "./OrderReadyModal";
 
-export default function OrdersSection() {
+export default function OrdersSection({
+  onNavigate,
+}: {
+  onNavigate?: (section: string) => void;
+}) {
   const [refreshing, setRefreshing] = useState(false);
   const [acceptModalVisible, setAcceptModalVisible] = useState(false);
   const [readyModalVisible, setReadyModalVisible] = useState(false);
@@ -31,15 +40,16 @@ export default function OrdersSection() {
   const { categorizedOrders, refetch: refetchOrders } =
     useRealtimeOrders(restaurantId);
 
-  // console.log(
-  //   JSON.stringify(getRestaurants?.results[0]?.name, null, 2),
-  //   "get-res name"
-  // );
-
-  // Helper to check if there are any orders
-  const hasOrders =
-    categorizedOrders.newOrders.length > 0 ||
-    categorizedOrders.acceptedOrders.length > 0;
+  // Memoize the hasOrders check to prevent unnecessary re-renders
+  const hasOrders = useMemo(() => {
+    return (
+      categorizedOrders.newOrders.length > 0 ||
+      categorizedOrders.acceptedOrders.length > 0
+    );
+  }, [
+    categorizedOrders.newOrders.length,
+    categorizedOrders.acceptedOrders.length,
+  ]);
 
   // Reset timer and hide empty state on orders or rerender
   useEffect(() => {
@@ -55,8 +65,8 @@ export default function OrdersSection() {
     };
   }, [hasOrders]);
 
-  // Reset timer on any user interaction
-  const handleUserInteraction = () => {
+  // Reset timer on scroll only, not on card clicks
+  const handleScroll = useCallback(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
     setShowEmptyState(false);
     if (!hasOrders) {
@@ -64,7 +74,7 @@ export default function OrdersSection() {
         setShowEmptyState(true);
       }, 15000);
     }
-  };
+  }, [hasOrders]);
 
   // Auto open AcceptOrderModal when a new order arrives
   useEffect(() => {
@@ -89,108 +99,73 @@ export default function OrdersSection() {
     }
   }, [refetchRestaurant, refetchOrders]);
 
-  const handleReadyForDelivery = () => {
+  const handleReadyForDelivery = useCallback(() => {
     setReadyModalVisible(false);
     // Handle ready for delivery logic here
+  }, []);
+
+  const handleOrderPress = useCallback(
+    (order: any, type: "new" | "accepted") => {
+      setSelectedOrder(order);
+      if (type === "new") {
+        setAcceptModalVisible(true);
+      } else if (type === "accepted") {
+        setReadyModalVisible(true);
+      }
+    },
+    []
+  );
+
+  // Navigation handlers for action cards
+  const handleMenuPress = () => {
+    onNavigate?.("menu");
   };
 
-  const handleOrderPress = (order: any, type: "new" | "accepted") => {
-    setSelectedOrder(order);
-    if (type === "new") {
-      setAcceptModalVisible(true);
-    } else if (type === "accepted") {
-      setReadyModalVisible(true);
+  const handleRecentOrdersPress = () => {
+    onNavigate?.("recent");
+  };
+
+  const handlePerformancePress = () => {
+    onNavigate?.("performance");
+  };
+
+  const handleSettingsPress = () => {
+    onNavigate?.("settings");
+  };
+
+  // Memoize the new orders rendering to prevent unnecessary re-renders
+  const newOrdersContent = useMemo(() => {
+    if (categorizedOrders.newOrders.length > 0) {
+      return categorizedOrders.newOrders.map((order) => (
+        <TouchableOpacity
+          key={order.id}
+          activeOpacity={0.85}
+          onPress={() => handleOrderPress(order, "new")}
+        >
+          <OrderCard order={order} />
+        </TouchableOpacity>
+      ));
+    } else {
+      return <OrderEmptyCard text="No new orders" />;
     }
-  };
+  }, [categorizedOrders.newOrders, handleOrderPress]);
 
-  if (showEmptyState && !hasOrders) {
-    return (
-      <ScrollView
-        className="flex-1 bg-white"
-        contentContainerStyle={{
-          flexGrow: 1,
-          justifyContent: "flex-start",
-          alignItems: "center",
-          marginTop: 48,
-        }}
-        scrollEventThrottle={16}
-      >
-        <Image
-          source={require("../assets/images/bg.png")}
-          style={{ width: 120, height: 120, marginBottom: 24 }}
-          resizeMode="contain"
-        />
-        <Text className="text-2xl font-bold text-black text-center mb-2">
-          No active orders
-        </Text>
-        <Text className="text-center text-gray-700 mb-6 px-6">
-          Use this time efficiently: Increase your profits by keeping your
-          business up to date.
-        </Text>
-        <View className="w-full px-4">
-          <View className="flex-row mb-3">
-            <TouchableOpacity
-              className="flex-1 bg-yellow-200 rounded-xl shadow p-4 mr-2 items-center"
-              onPress={() => {
-                /* TODO: handle update menu */
-              }}
-            >
-              <Text className="text-yellow-700 text-2xl mb-1">🍽️</Text>
-              <Text className="font-bold text-base text-yellow-700 mb-1 text-center">
-                Update your menu
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              className="flex-1 bg-orange-100 rounded-xl shadow p-4 ml-2 items-center"
-              onPress={() => {
-                /* TODO: handle avoidable wait time */
-              }}
-            >
-              <Text className="text-orange-500 text-2xl mb-1">🕒</Text>
-              <Text className="font-bold text-base text-orange-500 mb-1 text-center">
-                Avoidable wait time
-              </Text>
-            </TouchableOpacity>
-          </View>
-          <View className="flex-row mb-3">
-            <TouchableOpacity
-              className="flex-1 bg-yellow-200 rounded-xl shadow p-4 mr-2 items-center"
-              onPress={() => {
-                /* TODO: handle check performance */
-              }}
-            >
-              <Text className="text-yellow-700 text-2xl mb-1">📈</Text>
-              <Text className="font-bold text-base text-yellow-700 mb-1 text-center">
-                Check your Performance
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              className="flex-1 bg-orange-100 rounded-xl shadow p-4 ml-2 items-center"
-              onPress={() => {
-                /* TODO: handle see new features */
-              }}
-            >
-              <Text className="text-orange-500 text-2xl mb-1">✨</Text>
-              <Text className="font-bold text-base text-orange-500 mb-1 text-center">
-                See new Features
-              </Text>
-            </TouchableOpacity>
-          </View>
-          <TouchableOpacity
-            className="bg-yellow-200 rounded-xl shadow p-4 items-center"
-            onPress={() => {
-              /* TODO: handle help center */
-            }}
-          >
-            <Text className="text-yellow-700 text-2xl mb-1">ℹ️</Text>
-            <Text className="font-bold text-base text-yellow-700 mb-1">
-              Visit our Help Center
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    );
-  }
+  // Memoize the accepted orders rendering
+  const acceptedOrdersContent = useMemo(() => {
+    if (categorizedOrders.acceptedOrders.length > 0) {
+      return categorizedOrders.acceptedOrders.map((order) => (
+        <TouchableOpacity
+          key={order.id}
+          activeOpacity={0.85}
+          onPress={() => handleOrderPress(order, "accepted")}
+        >
+          <OrderCard order={order} accepted />
+        </TouchableOpacity>
+      ));
+    } else {
+      return <OrderEmptyCard text="No accepted orders" />;
+    }
+  }, [categorizedOrders.acceptedOrders, handleOrderPress]);
 
   return (
     <>
@@ -204,76 +179,141 @@ export default function OrdersSection() {
             progressBackgroundColor="#fff"
           />
         }
-        onTouchStart={handleUserInteraction}
-        onScroll={handleUserInteraction}
+        onScroll={handleScroll}
         scrollEventThrottle={16}
       >
-        {/* Top row: New & Upcoming */}
-        <View className="flex-row justify-between mb-6">
-          <View className="flex-1 mr-2">
-            <OrderCategoryHeader
-              title="New"
-              count={categorizedOrders.newOrders.length}
-            />
-            {categorizedOrders.newOrders.length > 0 ? (
-              categorizedOrders.newOrders.map((order) => (
-                <TouchableOpacity
-                  key={order.id}
-                  activeOpacity={0.85}
-                  onPress={() => handleOrderPress(order, "new")}
-                >
-                  <OrderCard order={order} />
-                </TouchableOpacity>
-              ))
-            ) : (
-              <OrderEmptyCard text="No new orders" />
-            )}
-          </View>
-          <View className="flex-1 ml-2">
-            <OrderCategoryHeader title="Upcoming" count={0} />
-            <OrderEmptyCard text="No upcoming orders" />
-          </View>
-        </View>
+        {showEmptyState && !hasOrders ? (
+          <View className="flex-1 items-center justify-center py-8">
+            {/* Illustration */}
+            <View className="items-center mb-6">
+              <View className="w-32 h-32 bg-gray-100 rounded-full items-center justify-center mb-4">
+                <View className="w-20 h-20 bg-orange-100 rounded-full items-center justify-center">
+                  <Text className="text-3xl">📋</Text>
+                </View>
+              </View>
+            </View>
 
-        {/* Accepted row */}
-        <View className="mt-2">
-          <OrderCategoryHeader
-            title="Accepted"
-            count={categorizedOrders.acceptedOrders.length}
-          />
-          {categorizedOrders.acceptedOrders.length > 0 ? (
-            categorizedOrders.acceptedOrders.map((order) => (
-              <TouchableOpacity
-                key={order.id}
-                activeOpacity={0.85}
-                onPress={() => handleOrderPress(order, "accepted")}
-              >
-                <OrderCard order={order} accepted />
-              </TouchableOpacity>
-            ))
-          ) : (
-            <OrderEmptyCard text="No accepted orders" />
-          )}
-        </View>
+            {/* Title */}
+            <Text className="text-2xl font-bold text-gray-800 mb-2 text-center">
+              No active orders
+            </Text>
+
+            {/* Subtitle */}
+            <Text className="text-gray-600 text-center mb-8 px-6">
+              Use this time efficiently: Increase your profits by keeping your
+              business up to date.
+            </Text>
+
+            {/* Action Cards Grid */}
+            <View className="w-full px-4">
+              <View className="flex-row justify-between mb-4">
+                <TouchableOpacity
+                  className="flex-1 bg-white rounded-xl p-4 mr-2 shadow-sm border border-orange-100"
+                  style={{ elevation: 2 }}
+                  onPress={handleMenuPress}
+                >
+                  <View className="items-center">
+                    <View className="w-12 h-12 bg-yellow-100 rounded-full items-center justify-center mb-2">
+                      <Text className="text-xl">🍽️</Text>
+                    </View>
+                    <Text className="text-sm font-semibold text-gray-800 text-center">
+                      Menu
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  className="flex-1 bg-white rounded-xl p-4 ml-2 shadow-sm border border-orange-100"
+                  style={{ elevation: 2 }}
+                  onPress={handleRecentOrdersPress}
+                >
+                  <View className="items-center">
+                    <View className="w-12 h-12 bg-orange-100 rounded-full items-center justify-center mb-2">
+                      <Text className="text-xl">📊</Text>
+                    </View>
+                    <Text className="text-sm font-semibold text-gray-800 text-center">
+                      Recent Orders
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
+
+              <View className="flex-row justify-between mb-4">
+                <TouchableOpacity
+                  className="flex-1 bg-white rounded-xl p-4 mr-2 shadow-sm border border-orange-100"
+                  style={{ elevation: 2 }}
+                  onPress={handlePerformancePress}
+                >
+                  <View className="items-center">
+                    <View className="w-12 h-12 bg-yellow-100 rounded-full items-center justify-center mb-2">
+                      <Text className="text-xl">📈</Text>
+                    </View>
+                    <Text className="text-sm font-semibold text-gray-800 text-center">
+                      Performance
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  className="flex-1 bg-white rounded-xl p-4 ml-2 shadow-sm border border-orange-100"
+                  style={{ elevation: 2 }}
+                  onPress={handleSettingsPress}
+                >
+                  <View className="items-center">
+                    <View className="w-12 h-12 bg-orange-100 rounded-full items-center justify-center mb-2">
+                      <Text className="text-xl">⚙️</Text>
+                    </View>
+                    <Text className="text-sm font-semibold text-gray-800 text-center">
+                      Settings
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        ) : (
+          <>
+            {/* Top row: New & Upcoming */}
+            <View className="flex-row justify-between mb-6">
+              <View className="flex-1 mr-2">
+                <OrderCategoryHeader
+                  title="New"
+                  count={categorizedOrders.newOrders.length}
+                />
+                {newOrdersContent}
+              </View>
+              <View className="flex-1 ml-2">
+                <OrderCategoryHeader title="Upcoming" count={0} />
+                <OrderEmptyCard text="No upcoming orders" />
+              </View>
+            </View>
+
+            {/* Accepted row */}
+            <View className="mb-6">
+              <OrderCategoryHeader
+                title="Accepted"
+                count={categorizedOrders.acceptedOrders.length}
+              />
+              {acceptedOrdersContent}
+            </View>
+          </>
+        )}
       </ScrollView>
 
-      {selectedOrder && (
-        <>
-          <AcceptOrderModal
-            restaurantName={restaurantName}
-            visible={acceptModalVisible}
-            onClose={() => setAcceptModalVisible(false)}
-            order={selectedOrder}
-          />
-          <OrderReadyModal
-            restaurantName={restaurantName}
-            visible={readyModalVisible}
-            onClose={() => setReadyModalVisible(false)}
-            order={selectedOrder}
-            onReadyForDelivery={handleReadyForDelivery}
-          />
-        </>
-      )}
+      {/* Modals */}
+      <AcceptOrderModal
+        visible={acceptModalVisible}
+        onClose={() => setAcceptModalVisible(false)}
+        order={selectedOrder}
+        restaurantName={restaurantName || ""}
+      />
+      <OrderReadyModal
+        visible={readyModalVisible}
+        onClose={() => setReadyModalVisible(false)}
+        order={selectedOrder}
+        onReadyForDelivery={handleReadyForDelivery}
+        restaurantName={restaurantName || ""}
+      />
     </>
   );
 }

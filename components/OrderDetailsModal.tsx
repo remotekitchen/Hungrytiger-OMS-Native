@@ -1,5 +1,4 @@
 import { ArrowLeft, Printer } from "lucide-react-native";
-import { MotiView } from "moti";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
@@ -73,13 +72,7 @@ export default function OrderDetailsModal({
   return (
     <Modal visible={visible} animationType="fade" transparent={false}>
       <View className="flex-1 bg-white justify-start items-stretch">
-        <MotiView
-          from={{ translateY: 60, opacity: 0 }}
-          animate={{ translateY: 0, opacity: 1 }}
-          exit={{ translateY: 60, opacity: 0 }}
-          transition={{ type: "timing", duration: 350 }}
-          className="flex-1"
-        >
+        <View className="flex-1">
           <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
             {/* Header */}
             <View className="flex-row items-center justify-between px-5 pt-5 pb-2">
@@ -247,7 +240,7 @@ export default function OrderDetailsModal({
               </Text>
             </TouchableOpacity>
           </View>
-        </MotiView>
+        </View>
       </View>
     </Modal>
   );

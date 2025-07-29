@@ -1,6 +1,5 @@
 import { ArrowLeft } from "lucide-react-native";
-import { AnimatePresence, MotiView } from "moti";
-import React from "react";
+import React, { useState } from "react";
 import {
   Modal,
   ScrollView,
@@ -51,9 +50,9 @@ export default function UnavailableItemsModal({
   visible: boolean;
   onClose: () => void;
 }) {
-  const [show, setShow] = React.useState(visible);
-  const [closing, setClosing] = React.useState(false);
-  const [unavailable, setUnavailable] = React.useState(initialMockUnavailable);
+  const [show, setShow] = useState(visible);
+  const [closing, setClosing] = useState(false);
+  const [unavailable, setUnavailable] = useState(initialMockUnavailable);
 
   React.useEffect(() => {
     if (visible) {
@@ -90,123 +89,105 @@ export default function UnavailableItemsModal({
 
   return (
     <Modal visible={show} animationType="none" transparent>
-      <AnimatePresence>
-        {show && !closing && (
-          <MotiView
-            from={{ translateX: 400, opacity: 0 }}
-            animate={{ translateX: 0, opacity: 1 }}
-            exit={{ translateX: 400, opacity: 0 }}
-            transition={{ type: "timing", duration: 400 }}
+      {show && !closing && (
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "#fff",
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 100,
+          }}
+        >
+          <View
             style={{
-              flex: 1,
-              backgroundColor: "#fff",
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              zIndex: 100,
+              flexDirection: "row",
+              alignItems: "center",
+              padding: 18,
+              paddingBottom: 8,
             }}
           >
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                padding: 18,
-                paddingBottom: 8,
-              }}
-            >
-              <TouchableOpacity
-                onPress={handleClose}
-                style={{ marginRight: 12 }}
-              >
-                <ArrowLeft size={28} color="#222" />
-              </TouchableOpacity>
-              <Text style={{ fontWeight: "bold", fontSize: 22, color: "#111" }}>
-                Unavailable Items
-              </Text>
-            </View>
-            <ScrollView
-              style={{ flex: 1 }}
-              contentContainerStyle={{
-                paddingHorizontal: 8,
-                paddingBottom: 32,
-                marginTop: 8,
-              }}
-            >
-              {unavailable.map((cat, cidx) => (
-                <View key={cat.category} style={{ marginBottom: 18 }}>
-                  <Text
+            <TouchableOpacity onPress={handleClose} style={{ marginRight: 12 }}>
+              <ArrowLeft size={28} color="#222" />
+            </TouchableOpacity>
+            <Text style={{ fontWeight: "bold", fontSize: 22, color: "#111" }}>
+              Unavailable Items
+            </Text>
+          </View>
+          <ScrollView
+            style={{ flex: 1 }}
+            contentContainerStyle={{
+              paddingHorizontal: 8,
+              paddingBottom: 32,
+              marginTop: 8,
+            }}
+          >
+            {unavailable.map((cat, cidx) => (
+              <View key={cat.category} style={{ marginBottom: 18 }}>
+                <Text
+                  style={{
+                    fontWeight: "bold",
+                    fontSize: 17,
+                    color: "#222",
+                    marginBottom: 8,
+                  }}
+                >
+                  {cat.category}
+                </Text>
+                {cat.items.map((item, idx) => (
+                  <View
+                    key={item.name}
                     style={{
-                      fontWeight: "bold",
-                      fontSize: 17,
-                      color: "#222",
-                      marginBottom: 8,
+                      backgroundColor: "#F3F4F6",
+                      borderRadius: 14,
+                      flexDirection: "row",
+                      alignItems: "center",
+                      marginBottom: 12,
+                      padding: 10,
                     }}
                   >
-                    {cat.category}
-                  </Text>
-                  {cat.items.map((item, idx) => (
-                    <MotiView
-                      key={item.name}
-                      from={{ opacity: 0, translateY: 20 }}
-                      animate={{ opacity: 1, translateY: 0 }}
-                      transition={{
-                        type: "timing",
-                        duration: 400,
-                        delay: idx * 60,
-                      }}
+                    <View
                       style={{
-                        backgroundColor: "#F3F4F6",
-                        borderRadius: 14,
-                        flexDirection: "row",
+                        width: 48,
+                        height: 48,
+                        borderRadius: 8,
+                        backgroundColor: "#F1F1F1",
                         alignItems: "center",
-                        marginBottom: 12,
-                        padding: 10,
+                        justifyContent: "center",
+                        marginRight: 12,
+                        borderWidth: 1,
+                        borderColor: "#E5E7EB",
                       }}
                     >
-                      <View
-                        style={{
-                          width: 48,
-                          height: 48,
-                          borderRadius: 8,
-                          backgroundColor: "#F1F1F1",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          marginRight: 12,
-                          borderWidth: 1,
-                          borderColor: "#E5E7EB",
-                        }}
-                      >
-                        <Text style={{ color: "#BDBDBD", fontSize: 28 }}>
-                          🍽️
-                        </Text>
-                      </View>
-                      <Text
-                        style={{
-                          flex: 1,
-                          fontWeight: "500",
-                          fontSize: 16,
-                          color: "#222",
-                        }}
-                      >
-                        {item.name}
-                      </Text>
-                      <Switch
-                        value={item.available}
-                        trackColor={{ false: "#D1D5DB", true: "#34D399" }}
-                        thumbColor={item.available ? "#10B981" : "#ccc"}
-                        style={{ marginRight: 10 }}
-                        onValueChange={() => handleToggle(cidx, idx)}
-                      />
-                    </MotiView>
-                  ))}
-                </View>
-              ))}
-            </ScrollView>
-          </MotiView>
-        )}
-      </AnimatePresence>
+                      <Text style={{ color: "#BDBDBD", fontSize: 28 }}>🍽️</Text>
+                    </View>
+                    <Text
+                      style={{
+                        flex: 1,
+                        fontWeight: "500",
+                        fontSize: 16,
+                        color: "#222",
+                      }}
+                    >
+                      {item.name}
+                    </Text>
+                    <Switch
+                      value={item.available}
+                      trackColor={{ false: "#D1D5DB", true: "#34D399" }}
+                      thumbColor={item.available ? "#10B981" : "#ccc"}
+                      style={{ marginRight: 10 }}
+                      onValueChange={() => handleToggle(cidx, idx)}
+                    />
+                  </View>
+                ))}
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+      )}
     </Modal>
   );
 }

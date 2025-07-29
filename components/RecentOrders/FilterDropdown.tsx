@@ -1,5 +1,4 @@
 import { ChevronDown } from "lucide-react-native";
-import { MotiView } from "moti";
 import React, { useState } from "react";
 import { LayoutAnimation, Text, TouchableOpacity, View } from "react-native";
 import { FilterType } from "./types";
@@ -58,11 +57,7 @@ export default function FilterDropdown({
         />
       </TouchableOpacity>
       {isOpen && (
-        <MotiView
-          from={{ opacity: 0, translateY: -10 }}
-          animate={{ opacity: 1, translateY: 0 }}
-          className="absolute top-full left-0 right-0 bg-white rounded-lg shadow-lg mt-2"
-        >
+        <View className="absolute top-full left-0 right-0 bg-white rounded-lg shadow-lg mt-2">
           {filterOptions.map((option) => (
             <TouchableOpacity
               key={option.value}
@@ -74,7 +69,7 @@ export default function FilterDropdown({
               </Text>
             </TouchableOpacity>
           ))}
-        </MotiView>
+        </View>
       )}
     </View>
   );

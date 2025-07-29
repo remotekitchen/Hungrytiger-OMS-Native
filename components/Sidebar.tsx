@@ -24,13 +24,11 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { PanGestureHandler } from "react-native-gesture-handler";
 import Animated, {
   runOnJS,
-  useAnimatedGestureHandler,
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
+  withTiming,
 } from "react-native-reanimated";
 import { useDispatch } from "react-redux";
 
@@ -81,38 +79,32 @@ export default function Sidebar({
 
   const { data: getRestaurants } = useGetRestaurantQuery({});
 
-  // console.log(
-  //   JSON.stringify(getRestaurants?.results[0], null, 2),
-  //   "get-res name"
-  // );
-
   const restaurantLogo = getRestaurants?.results[0]?.logo;
   const restaurantName = getRestaurants?.results[0]?.name;
 
   React.useEffect(() => {
     if (visible) {
       setShouldRender(true);
-      translateX.value = withSpring(0, { damping: 18, stiffness: 180 });
+      translateX.value = withTiming(0, { duration: 250 });
     } else if (shouldRender) {
-      translateX.value = withSpring(
+      translateX.value = withTiming(
         -sidebarWidth,
-        { damping: 18, stiffness: 180 },
+        { duration: 200 },
         (finished) => {
           if (finished) runOnJS(finishClose)(setShouldRenderRef, onCloseRef);
         }
       );
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visible]);
+  }, [visible, shouldRender, sidebarWidth, translateX]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: translateX.value }],
   }));
 
   const handleClose = React.useCallback(() => {
-    translateX.value = withSpring(
+    translateX.value = withTiming(
       -sidebarWidth,
-      { damping: 18, stiffness: 180 },
+      { duration: 200 },
       (finished) => {
         if (finished) runOnJS(finishClose)(setShouldRenderRef, onCloseRef);
       }
@@ -138,28 +130,9 @@ export default function Sidebar({
     );
   };
 
-  const gestureHandler = useAnimatedGestureHandler({
-    onStart: (_, ctx: any) => {
-      ctx.startX = translateX.value;
-    },
-    onActive: (event, ctx: any) => {
-      let newX = ctx.startX + event.translationX;
-      if (newX > 0) newX = 0;
-      if (newX < -sidebarWidth) newX = -sidebarWidth;
-      translateX.value = newX;
-    },
-    onEnd: (event) => {
-      if (event.translationX < -sidebarWidth * 0.3) {
-        runOnJS(finishClose)(setShouldRenderRef, onCloseRef);
-      } else {
-        translateX.value = withSpring(0, { damping: 18, stiffness: 180 });
-      }
-    },
-  });
-
   const handleMenuSelect = (key: string) => {
     handleClose();
-    setTimeout(() => onSelect(key), 300); // ensure sidebar animates out before changing content
+    setTimeout(() => onSelect(key), 200); // Reduced timeout for faster response
   };
 
   if (!shouldRender) return null;
@@ -169,111 +142,110 @@ export default function Sidebar({
       className="absolute left-0 right-0 z-50 flex-row"
       style={{ top: statusBarHeight, height: windowHeight - statusBarHeight }}
     >
-      <PanGestureHandler onGestureEvent={gestureHandler}>
-        <Animated.View
-          style={[
-            { width: sidebarWidth, height: "100%" },
-            animatedStyle,
-            styles.sidebarShadow,
-            { borderTopRightRadius: 36, backgroundColor: "white" },
-          ]}
-        >
-          <View className="items-center pt-10 pb-4 bg-white">
-            <Image
-              // source={require("../assets/images/icon.png")}
-              source={{ uri: restaurantLogo }}
+      <Animated.View
+        style={[
+          { width: sidebarWidth, height: "100%" },
+          animatedStyle,
+          styles.sidebarShadow,
+          { borderTopRightRadius: 36, backgroundColor: "white" },
+        ]}
+      >
+        <View className="items-center pt-10 pb-4 bg-white">
+          <Image
+            source={{ uri: restaurantLogo }}
+            style={{
+              width: 64,
+              height: 64,
+              borderRadius: 32,
+              marginBottom: 8,
+            }}
+            resizeMode="cover"
+          />
+          <Text className="text-2xl font-extrabold text-black mb-2">
+            {restaurantName ? restaurantName : "Unknown Restaurant"}
+          </Text>
+        </View>
+
+        <View className="flex-1 px-4">
+          {menuItems.map((item, idx) => (
+            <TouchableOpacity
+              key={item.key}
+              className="flex-row items-center py-3"
+              onPress={() => handleMenuSelect(item.key)}
               style={{
-                width: 64,
-                height: 64,
-                borderRadius: 32,
-                marginBottom: 8,
+                borderLeftWidth: selectedKey === item.key ? 4 : 0,
+                borderLeftColor:
+                  selectedKey === item.key ? "#FB923C" : "transparent",
+                backgroundColor:
+                  selectedKey === item.key ? "#F8F8F8" : "transparent",
+                marginBottom: item.label === "What's new" ? 8 : 0,
               }}
-              resizeMode="cover"
-            />
-            <Text className="text-2xl font-extrabold text-black mb-2">
-              {restaurantName ? restaurantName : "Unknown Restaurant"}
-            </Text>
-          </View>
-          <View className="flex-1 px-4">
-            {menuItems.map((item, idx) => (
-              <TouchableOpacity
-                key={item.key}
-                className="flex-row items-center py-3"
-                onPress={() => handleMenuSelect(item.key)}
-                style={{
-                  borderLeftWidth: selectedKey === item.key ? 4 : 0,
-                  borderLeftColor:
-                    selectedKey === item.key ? "#FB923C" : "transparent",
-                  backgroundColor:
-                    selectedKey === item.key ? "#F8F8F8" : "transparent",
-                  marginBottom: item.label === "What's new" ? 8 : 0,
-                }}
-              >
-                <item.icon
-                  size={22}
-                  color="#222"
-                  style={{ marginLeft: 5, marginRight: 16 }}
-                />
-                <Text className="text-base font-semibold text-black flex-1">
-                  {item.label}
-                </Text>
-                {item.dropdown && <ChevronDown size={18} color="#222" />}
-                {item.badge && (
-                  <View
+            >
+              <item.icon
+                size={22}
+                color="#222"
+                style={{ marginLeft: 5, marginRight: 16 }}
+              />
+              <Text className="text-base font-semibold text-black flex-1">
+                {item.label}
+              </Text>
+              {item.dropdown && <ChevronDown size={18} color="#222" />}
+              {item.badge && (
+                <View
+                  style={{
+                    backgroundColor: "#FB923C",
+                    borderRadius: 12,
+                    minWidth: 24,
+                    height: 24,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginLeft: 8,
+                  }}
+                >
+                  <Text
                     style={{
-                      backgroundColor: "#FB923C",
-                      borderRadius: 12,
-                      minWidth: 24,
-                      height: 24,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      marginLeft: 8,
+                      color: "white",
+                      fontWeight: "bold",
+                      fontSize: 14,
                     }}
                   >
-                    <Text
-                      style={{
-                        color: "white",
-                        fontWeight: "bold",
-                        fontSize: 14,
-                      }}
-                    >
-                      {item.badge}
-                    </Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            ))}
-          </View>
-          <View
-            style={{
-              borderTopWidth: 1,
-              borderTopColor: "#eee",
-              marginHorizontal: 16,
-              marginTop: 8,
-            }}
-          />
-          <View className="px-4 pb-8 pt-4">
-            <TouchableOpacity
-              className="flex-row items-center py-3"
-              onPress={() => {}}
-            >
-              <Headphones size={22} color="#222" style={{ marginRight: 16 }} />
-              <Text className="text-base font-semibold text-black flex-1">
-                Help Center
-              </Text>
+                    {item.badge}
+                  </Text>
+                </View>
+              )}
             </TouchableOpacity>
-            <TouchableOpacity
-              className="flex-row items-center py-3"
-              onPress={handleLogout}
-            >
-              <ArrowLeft size={22} color="#222" style={{ marginRight: 16 }} />
-              <Text className="text-base font-semibold text-black flex-1">
-                Logout
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </Animated.View>
-      </PanGestureHandler>
+          ))}
+        </View>
+
+        <View
+          style={{
+            borderTopWidth: 1,
+            borderTopColor: "#eee",
+            marginHorizontal: 16,
+            marginTop: 8,
+          }}
+        />
+        <View className="px-4 pb-8 pt-4">
+          <TouchableOpacity
+            className="flex-row items-center py-3"
+            onPress={() => {}}
+          >
+            <Headphones size={22} color="#222" style={{ marginRight: 16 }} />
+            <Text className="text-base font-semibold text-black flex-1">
+              Help Center
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            className="flex-row items-center py-3"
+            onPress={handleLogout}
+          >
+            <ArrowLeft size={22} color="#222" style={{ marginRight: 16 }} />
+            <Text className="text-base font-semibold text-black flex-1">
+              Logout
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </Animated.View>
       {/* Click outside to close */}
       <TouchableOpacity style={{ flex: 1 }} onPress={handleClose} />
     </View>

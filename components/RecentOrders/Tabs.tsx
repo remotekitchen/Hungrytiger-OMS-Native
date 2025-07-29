@@ -1,22 +1,21 @@
 import { Calendar as CalendarIcon } from "lucide-react-native";
-import { MotiView } from "moti";
 import React, { useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
-import { Layout } from "react-native-reanimated";
 import DateRangeModal from "./DateRangeModal";
 import { DateFilter, DateRange } from "./types";
-
-interface TabsProps {
-  dateFilter: DateFilter;
-  setDateFilter: (filter: DateFilter) => void;
-}
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 };
 
-export default function Tabs({ dateFilter, setDateFilter }: TabsProps) {
+export default function Tabs({
+  dateFilter,
+  setDateFilter,
+}: {
+  dateFilter: DateFilter;
+  setDateFilter: (filter: DateFilter) => void;
+}) {
   const [modalVisible, setModalVisible] = useState(false);
 
   const handleSelectDateRange = (range: DateRange) => {
@@ -39,8 +38,7 @@ export default function Tabs({ dateFilter, setDateFilter }: TabsProps) {
             Last 7 days
           </Text>
           {dateFilter.mode === "last7days" && (
-            <MotiView
-              layout={Layout.springify()}
+            <View
               className="absolute -bottom-1 h-1 w-full bg-black"
               style={{ borderRadius: 2 }}
             />
@@ -67,8 +65,7 @@ export default function Tabs({ dateFilter, setDateFilter }: TabsProps) {
               : "Select Date"}
           </Text>
           {dateFilter.mode === "custom" && (
-            <MotiView
-              layout={Layout.springify()}
+            <View
               className="absolute -bottom-1 h-1 w-full bg-black"
               style={{ borderRadius: 2 }}
             />

@@ -14,7 +14,7 @@ import * as Updates from "expo-updates";
 import { NativeBaseProvider, extendTheme } from "native-base";
 import "nativewind";
 import { useEffect, useRef, useState } from "react";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { View } from "react-native";
 import "react-native-reanimated";
 import Toast from "react-native-toast-message";
 import { Provider, useDispatch, useSelector } from "react-redux";
@@ -116,7 +116,7 @@ export default function RootLayout() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <View style={{ flex: 1 }}>
       <NativeBaseProvider theme={theme}>
         <Provider store={store}>
           <StatusBar style="auto" translucent />
@@ -131,7 +131,7 @@ export default function RootLayout() {
           />
         </Provider>
       </NativeBaseProvider>
-    </GestureHandlerRootView>
+    </View>
   );
 }
 
@@ -150,21 +150,43 @@ function GlobalOrderSoundListener() {
       // Start looping sound
       (async () => {
         try {
-          await player.seekTo(0);
-          await player.play();
-        } catch (e) {}
+          if (
+            player &&
+            typeof player.seekTo === "function" &&
+            typeof player.play === "function"
+          ) {
+            await player.seekTo(0);
+            await player.play();
+          }
+        } catch (e) {
+          console.log("Audio play error:", e);
+        }
       })();
       intervalRef.current = setInterval(async () => {
         try {
-          await player.seekTo(0);
-          await player.play();
-        } catch (e) {}
+          if (
+            player &&
+            typeof player.seekTo === "function" &&
+            typeof player.play === "function"
+          ) {
+            await player.seekTo(0);
+            await player.play();
+          }
+        } catch (e) {
+          console.log("Audio play error:", e);
+        }
       }, 2000); // Play every 2 seconds (adjust to match your sound length)
     } else if (!hasPending && intervalRef.current) {
       // Stop looping sound
       clearInterval(intervalRef.current);
       intervalRef.current = null;
-      player.pause();
+      try {
+        if (player && typeof player.pause === "function") {
+          player.pause();
+        }
+      } catch (e) {
+        console.log("Audio pause error:", e);
+      }
     }
     // Cleanup on unmount
     return () => {
@@ -172,7 +194,13 @@ function GlobalOrderSoundListener() {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
-      player.pause();
+      try {
+        if (player && typeof player.pause === "function") {
+          player.pause();
+        }
+      } catch (e) {
+        console.log("Audio cleanup error:", e);
+      }
     };
   }, [categorizedOrders.newOrders.length, player]);
 

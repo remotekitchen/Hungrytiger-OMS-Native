@@ -1,6 +1,5 @@
 import * as Updates from "expo-updates";
 import { Download, RefreshCw } from "lucide-react-native";
-import { MotiView } from "moti";
 import React, { useState } from "react";
 import { Alert, Modal, Text, TouchableOpacity, View } from "react-native";
 
@@ -66,10 +65,7 @@ export default function OTAUpdateModal({
           justifyContent: "flex-end",
         }}
       >
-        <MotiView
-          from={{ translateY: 400, opacity: 0 }}
-          animate={{ translateY: 0, opacity: 1 }}
-          transition={{ type: "timing", duration: 500 }}
+        <View
           style={{
             backgroundColor: "#fff",
             borderTopLeftRadius: 20,
@@ -170,7 +166,7 @@ export default function OTAUpdateModal({
           >
             The app will restart automatically after the update
           </Text>
-        </MotiView>
+        </View>
       </View>
     </Modal>
   );

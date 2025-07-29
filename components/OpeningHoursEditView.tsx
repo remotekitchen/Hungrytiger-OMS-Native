@@ -1,4 +1,3 @@
-import { AnimatePresence, MotiView } from "moti";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
@@ -8,6 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import Animated, { Layout } from "react-native-reanimated";
 import OpeningHoursDayRow from "./OpeningHoursDayRow";
 import OpeningHoursShiftRow from "./OpeningHoursShiftRow";
 import TimePickerModal from "./TimePickerModal";
@@ -104,44 +104,36 @@ export default function OpeningHoursEditView({
               onToggle={() => handleToggle(idx)}
               onArrowPress={() => handleArrow(idx)}
             />
-            <AnimatePresence>
-              {expandedDays.includes(idx) && item.enabled && (
-                <MotiView
-                  from={{ opacity: 0, translateY: -10 }}
-                  animate={{ opacity: 1, translateY: 0 }}
-                  exit={{ opacity: 0, translateY: -10 }}
-                  transition={{ type: "timing", duration: 300 }}
-                  key={"shift-section"}
-                >
-                  {item.shifts.map((shift, sidx) => (
-                    <OpeningHoursShiftRow
-                      key={sidx}
-                      start={shift.start}
-                      end={shift.end}
-                      onStartChange={() => openPicker(idx, sidx, "start")}
-                      onEndChange={() => openPicker(idx, sidx, "end")}
-                      onRemove={() => handleRemoveShift(idx, sidx)}
-                    />
-                  ))}
-                  {item.shifts.length < 2 && (
-                    <TouchableOpacity
-                      onPress={() => handleAddShift(idx)}
-                      style={{ marginLeft: 32, marginBottom: 8 }}
+            {expandedDays.includes(idx) && item.enabled && (
+              <Animated.View layout={Layout.springify()}>
+                {item.shifts.map((shift, sidx) => (
+                  <OpeningHoursShiftRow
+                    key={sidx}
+                    start={shift.start}
+                    end={shift.end}
+                    onStartChange={() => openPicker(idx, sidx, "start")}
+                    onEndChange={() => openPicker(idx, sidx, "end")}
+                    onRemove={() => handleRemoveShift(idx, sidx)}
+                  />
+                ))}
+                {item.shifts.length < 2 && (
+                  <TouchableOpacity
+                    onPress={() => handleAddShift(idx)}
+                    style={{ marginLeft: 32, marginBottom: 8 }}
+                  >
+                    <Text
+                      style={{
+                        color: "#E91E63",
+                        fontWeight: "bold",
+                        fontSize: 16,
+                      }}
                     >
-                      <Text
-                        style={{
-                          color: "#E91E63",
-                          fontWeight: "bold",
-                          fontSize: 16,
-                        }}
-                      >
-                        Add a shift
-                      </Text>
-                    </TouchableOpacity>
-                  )}
-                </MotiView>
-              )}
-            </AnimatePresence>
+                      Add a shift
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </Animated.View>
+            )}
           </View>
         ))}
       </ScrollView>

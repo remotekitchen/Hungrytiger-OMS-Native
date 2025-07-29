@@ -1,4 +1,3 @@
-import { MotiView } from "moti";
 import React, { useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 
@@ -16,11 +15,8 @@ function SkeletonLoader() {
       }}
     >
       {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-        <MotiView
+        <View
           key={i}
-          from={{ opacity: 0.3, translateY: 20 }}
-          animate={{ opacity: 1, translateY: 0 }}
-          transition={{ type: "timing", duration: 600, delay: i * 120 }}
           style={{
             flexDirection: "row",
             alignItems: "center",
@@ -67,7 +63,7 @@ function SkeletonLoader() {
               }}
             />
           </View>
-        </MotiView>
+        </View>
       ))}
     </View>
   );
@@ -91,25 +87,10 @@ export default function MenuCategoryList({
   const getItemCountForCategory = (categoryId: number) => {
     if (!Array.isArray(items)) return 0;
 
-    // console.log("Items array:", items);
-    // console.log("Looking for categoryId:", categoryId);
-
     const filteredItems = items.filter((item: any) => {
-      // console.log(
-      //   "Item category:",
-      //   item.category,
-      //   "Type:",
-      //   typeof item.category
-      // );
       return Array.isArray(item.category) && item.category.includes(categoryId);
     });
 
-    // console.log(
-    //   "Filtered items for category",
-    //   categoryId,
-    //   ":",
-    //   filteredItems.length
-    // );
     return filteredItems.length;
   };
 
@@ -145,33 +126,6 @@ export default function MenuCategoryList({
           >
             Delivery Menu
           </Text>
-          {/* <TouchableOpacity
-            style={{
-              backgroundColor: "#2563eb",
-              borderRadius: 8,
-              paddingHorizontal: 12,
-              paddingVertical: 8,
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 6,
-            }}
-            activeOpacity={0.8}
-            onPress={() => {
-              // TODO: Implement add item functionality
-              console.log("Add Item pressed");
-            }}
-          >
-            <PlusCircle size={16} color="#fff" />
-            <Text
-              style={{
-                color: "#fff",
-                fontWeight: "600",
-                fontSize: 14,
-              }}
-            >
-              Add Item
-            </Text>
-          </TouchableOpacity> */}
         </View>
         {isLoading ? (
           <SkeletonLoader />
@@ -184,11 +138,8 @@ export default function MenuCategoryList({
             const itemCount = getItemCountForCategory(cat?.id);
             const isDisabled = itemCount === 0;
             return (
-              <MotiView
+              <View
                 key={cat?.id || cat?.name || idx}
-                from={{ opacity: 0, translateX: -20 }}
-                animate={{ opacity: 1, translateX: 0 }}
-                transition={{ type: "timing", duration: 500, delay: 100 * idx }}
                 style={{ marginBottom: 12 }}
               >
                 <TouchableOpacity
@@ -238,7 +189,7 @@ export default function MenuCategoryList({
                     </Text>
                   </View>
                 </TouchableOpacity>
-              </MotiView>
+              </View>
             );
           })
         )}

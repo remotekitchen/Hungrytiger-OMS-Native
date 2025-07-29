@@ -1,6 +1,5 @@
 import { Bike } from "lucide-react-native";
-import { MotiView } from "moti";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Text, View } from "react-native";
 
 interface OrderItem {
@@ -36,16 +35,35 @@ export default function OrderCard({
   order: Order;
   accepted?: boolean;
 }) {
-  // Calculate total items
-  const totalItems = order.orderitem_set.reduce(
-    (sum, item) => sum + item.quantity,
-    0
-  );
+  // Memoize expensive calculations
+  const totalItems = useMemo(() => {
+    return order.orderitem_set.reduce((sum, item) => sum + item.quantity, 0);
+  }, [order.orderitem_set]);
 
-  // Format currency
-  const formatCurrency = (amount: number) => {
-    return `BDT${amount.toFixed(2)}`;
-  };
+  // Memoize currency formatting
+  const formatCurrency = useMemo(() => {
+    return (amount: number) => {
+      return `BDT${amount.toFixed(2)}`;
+    };
+  }, []);
+
+  // Move hooks outside conditional - always call them
+  const acceptedTime = accepted ? new Date(order.created_date).getTime() : 0;
+  const [now, setNow] = useState(Date.now());
+  const intervalRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (accepted && order.status !== "completed") {
+      setNow(Date.now());
+      // Update every minute instead of every second for better performance
+      intervalRef.current = setInterval(() => {
+        setNow(Date.now());
+      }, 60000); // 60 seconds
+      return () => {
+        if (intervalRef.current) clearInterval(intervalRef.current);
+      };
+    }
+  }, [accepted, order.status, order.created_date]);
 
   if (accepted) {
     if (order.status === "completed") {
@@ -58,99 +76,121 @@ export default function OrderCard({
       statusLabel = "READY";
       statusClass = "bg-green-100 text-green-600";
     } else {
-      statusLabel = order.status.replace(/_/g, " ").toUpperCase();
+      statusLabel = "ACCEPTED";
       statusClass = "bg-pink-100 text-pink-600";
     }
 
-    // Dynamic prep time countdown
-    const acceptedTime = new Date(order.created_date).getTime();
-    const [now, setNow] = useState(Date.now());
-    const intervalRef = useRef<any>(null);
-    useEffect(() => {
-      setNow(Date.now());
-      intervalRef.current = setInterval(() => {
-        setNow(Date.now());
-      }, 60000);
-      return () => {
-        if (intervalRef.current) clearInterval(intervalRef.current);
-      };
-    }, []);
     const elapsedMinutes = Math.floor((now - acceptedTime) / 60000);
     const remaining = order.prep_time - elapsedMinutes;
     const isLate = remaining < 0;
 
     return (
-      <MotiView
-        from={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ type: "timing", duration: 400 }}
-        className="bg-white rounded-xl px-4 py-3 flex-row items-center min-h-[90px] mb-2 border border-gray-200 shadow-sm"
-      >
-        {/* Left: Order Info */}
-        <View className="flex-1">
-          <View className="flex-row items-center mb-1">
-            <Text className="font-extrabold text-lg text-black mr-2">
-              #{order.id}
-            </Text>
-            <Text
-              className={`font-bold rounded px-2 py-0.5 text-xs ml-1 ${statusClass}`}
-            >
-              {statusLabel}
-            </Text>
-          </View>
-          <Text className="text-black text-base mb-1">
-            {order.order_id.slice(0, 8)} {totalItems} item
-            {totalItems > 1 ? "s" : ""}
-          </Text>
-          {!isReady && (
-            <View className="flex-row items-center mt-1">
-              <Bike size={16} color="#222" className="mr-1" />
-              <Text className="text-black text-base ml-2">
-                Rider is on the way
+      <View className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-3">
+        <View className="flex-row justify-between items-start mb-3">
+          <View className="flex-1">
+            <View className="flex-row items-center mb-2">
+              <Text className="text-lg font-bold text-gray-900 mr-2">
+                #{order.id}
+              </Text>
+              <Text
+                className={`text-xs font-semibold px-2 py-1 rounded-full ${statusClass}`}
+              >
+                {statusLabel}
               </Text>
             </View>
-          )}
-          {isReady && (
-            <Text className="text-gray-600 text-sm mt-1">
-              {formatCurrency(order.total)}
+            <Text className="text-sm text-gray-500 mb-1">
+              {order.order_id} • {totalItems} item{totalItems !== 1 ? "s" : ""}
             </Text>
+            {isReady ? (
+              <Text className="text-sm text-gray-700 font-semibold">
+                {formatCurrency(order.total)}
+              </Text>
+            ) : (
+              <View className="flex-row items-center">
+                <Bike size={14} color="#000" />
+                <Text className="text-sm text-gray-700 ml-1">
+                  Rider is on the way
+                </Text>
+              </View>
+            )}
+          </View>
+          {!isReady && (
+            <View className="items-end">
+              <View
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
+                  backgroundColor: "#32CD32",
+                  borderWidth: 2,
+                  borderColor: "white",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  style={{
+                    color: "white",
+                    fontWeight: "bold",
+                    fontSize: 14,
+                  }}
+                >
+                  {Math.max(0, remaining)}
+                </Text>
+              </View>
+            </View>
           )}
         </View>
-        {/* Right: Green Circle with Minutes (only for accepted, not ready) */}
-        {!isReady && (
-          <View className="ml-2">
-            <View
-              className={`w-12 h-12 rounded-full border-2 items-center justify-center bg-white ${
-                isLate ? "border-red-500 bg-red-100" : "border-green-500"
-              }`}
-            >
-              <Text
-                className={`font-bold text-lg ${
-                  isLate ? "text-red-600" : "text-green-700"
-                }`}
-              >
-                {remaining}
-              </Text>
-            </View>
-          </View>
-        )}
-      </MotiView>
+      </View>
     );
   }
 
-  // Default (new) card
+  // New order design with yellow/orange background
   return (
-    <MotiView
-      from={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ type: "timing", duration: 400 }}
-      className="bg-orange-400 rounded-xl p-5 min-w-[140px] min-h-[120px] justify-center mb-2 shadow-md"
-    >
-      <Text className="text-white font-bold text-xl mb-2">#{order.id}</Text>
-      <Text className="text-white text-base mb-2">
-        {totalItems} item{totalItems > 1 ? "s" : ""}
-      </Text>
-      <Text className="text-white text-base">{order.prep_time} mins</Text>
-    </MotiView>
+    <View className="bg-orange-500 rounded-lg shadow-sm p-4 mb-3">
+      <View className="flex-row justify-between items-start mb-3">
+        <View className="flex-1">
+          <Text className="text-lg font-bold text-white">#{order.id}</Text>
+          <Text className="text-sm text-orange-100">
+            {totalItems} item{totalItems !== 1 ? "s" : ""}
+          </Text>
+          <Text className="text-sm text-orange-100 mt-1">
+            {order.prep_time} mins
+          </Text>
+        </View>
+        <View className="items-end">
+          <Text className="text-xs font-semibold bg-white text-orange-500 px-2 py-1 rounded-full">
+            NEW
+          </Text>
+          <Text className="text-lg font-bold text-white mt-1">
+            {formatCurrency(order.total)}
+          </Text>
+        </View>
+      </View>
+
+      <View className="flex-row justify-between items-center">
+        <View className="flex-row items-center">
+          <Bike size={16} color="white" />
+          <Text className="text-sm text-orange-100 ml-1">
+            {order.payment_method === "cash" ? "Cash" : "Online"}
+          </Text>
+        </View>
+        <View className="items-end">
+          <Text className="text-sm font-semibold text-orange-100">
+            Prep: {order.prep_time}m
+          </Text>
+        </View>
+      </View>
+    </View>
   );
 }
+
+// Memoize the formatTime function
+const formatTime = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+};

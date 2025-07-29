@@ -1,4 +1,3 @@
-import { MotiView } from "moti";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -115,11 +114,7 @@ export default function ChangeAvailabilityModal({
           alignItems: "center",
         }}
       >
-        <MotiView
-          from={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.95, opacity: 0 }}
-          transition={{ type: "timing", duration: 300 }}
+        <View
           style={{
             backgroundColor: "#F7F7FB",
             borderRadius: 18,
@@ -134,11 +129,7 @@ export default function ChangeAvailabilityModal({
         >
           {/* Toast Message */}
           {toastMessage && (
-            <MotiView
-              from={{ opacity: 0, translateY: -20 }}
-              animate={{ opacity: 1, translateY: 0 }}
-              exit={{ opacity: 0, translateY: -20 }}
-              transition={{ type: "timing", duration: 300 }}
+            <View
               style={{
                 position: "absolute",
                 top: -60,
@@ -162,7 +153,7 @@ export default function ChangeAvailabilityModal({
               >
                 {toastMessage.message}
               </Text>
-            </MotiView>
+            </View>
           )}
 
           <View
@@ -260,7 +251,7 @@ export default function ChangeAvailabilityModal({
               {isLoading ? "Updating..." : "Change"}
             </Text>
           </TouchableOpacity>
-        </MotiView>
+        </View>
       </View>
     </Modal>
   );

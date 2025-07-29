@@ -5,16 +5,16 @@ import { MenuItem } from "./types";
 
 interface MenuItemListProps {
   items: MenuItem[];
-  onImagePress: (imageUri: string) => void;
-  onAvailabilityChange: (index: number) => void;
+  onAvailabilityChange: (index: number, value: boolean) => void;
   onEdit: (index: number) => void;
+  onImagePress: (imageUri: string) => void;
 }
 
 export default function MenuItemList({
   items,
-  onImagePress,
   onAvailabilityChange,
   onEdit,
+  onImagePress,
 }: MenuItemListProps) {
   if (items.length === 0) {
     return (
@@ -38,9 +38,9 @@ export default function MenuItemList({
             key={item.id || item.name}
             item={item}
             index={idx}
-            onImagePress={onImagePress}
-            onAvailabilityChange={() => onAvailabilityChange(idx)}
+            onAvailabilityChange={(value) => onAvailabilityChange(idx, value)}
             onEdit={() => onEdit(idx)}
+            onImagePress={onImagePress}
           />
         ))}
       </View>
