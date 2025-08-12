@@ -12,9 +12,8 @@
       "bundleIdentifier": "com.chatchefs.htoms",
       "supportsTablet": true,
       "infoPlist": {
-        "UIBackgroundModes": [
-          "audio"
-        ]
+        "UIBackgroundModes": ["audio"],
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -25,19 +24,21 @@
       },
       "edgeToEdgeEnabled": true,
       "permissions": [
-        "INTERNET",
-        "NOTIFICATIONS",
-        "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION",
-        "CAMERA",
-        "READ_MEDIA_IMAGES",
-        "READ_MEDIA_VIDEO",
-        "FOREGROUND_SERVICE",
-        "WAKE_LOCK",
-        "BLUETOOTH",
-        "BLUETOOTH_ADMIN",
-        "BLUETOOTH_CONNECT",
-        "BLUETOOTH_SCAN"
+        "android.permission.INTERNET",
+        "android.permission.NOTIFICATIONS",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.WAKE_LOCK",
+        "android.permission.BLUETOOTH",
+        "android.permission.BLUETOOTH_ADMIN",
+        "android.permission.BLUETOOTH_CONNECT",
+        "android.permission.BLUETOOTH_SCAN",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
       ]
     },
     "web": {
@@ -76,8 +77,7 @@
         {
           "microphonePermission": "Allow HungryTiger-OMS to access your microphone."
         }
-      ],
-      "expo-barcode-scanner"
+      ]
     ],
     "experiments": {
       "typedRoutes": true
@@ -92,6 +92,15 @@
     },
     "updates": {
       "url": "https://u.expo.dev/6ddee96b-b374-4bf5-8a45-e9c1bbc56e52"
+    }
+  },
+  "submit": {
+    "Production": {
+      "ios": {
+        "appleId": "siliconvalleystan@gmail.com",
+        "ascAppId": "6749886403",
+        "appleTeamId": "SRQSDLH6K4"
+      }
     }
   }
 }

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Platform, StatusBar, View } from "react-native";
 import Header from "../components/Header";
 import HistorySection from "../components/HistorySection";
@@ -18,7 +18,6 @@ import {
   useGetRestaurantQuery,
   useGetStoreStatusQuery,
 } from "@/redux/feature/restaurant/restaurantApi";
-import { useEffect } from "react";
 import MenusSection from "../components/MenusSection";
 import OrdersSection from "../components/OrdersSection";
 import StoreStatusModal from "../components/StoreStatusModal";
@@ -172,7 +171,6 @@ export default function Home() {
       >
         <Header
           onMenuPress={() => setSidebarOpen(true)}
-          onQrPress={() => {}}
           onOpenPress={() => setStoreStatusModalVisible(true)}
           storeStatusLabel={storeStatusLabel}
           isPaused={!!storeStatusApi}
